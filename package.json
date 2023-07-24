@@ -3,20 +3,21 @@
     "version": "0.1.0",
     "description": "Dashboard for open source project insights",
     "scripts": {
-      "start": "node index.js",
-      "test": "echo \"Error: no test specified\" && exit 1" 
+        "start": "node index.js",
+        "test": "echo \"Error: no test specified\" && exit 1"
     },
     "repository": {
-      "type": "git",
-      "url": "https://github.com/akhatami/repo-insights.git"
+        "type": "git",
+        "url": "https://github.com/akhatami/repo-insights.git"
     },
     "author": "Ali Khatami",
     "license": "MIT",
     "dependencies": {
-      "express": "^4.18.2"
+        "api": "^6.1.0",
+        "express": "^4.18.2",
+        "request": "^2.88.2"
     },
     "devDependencies": {
-      "eslint": "^8.30.0"
+        "eslint": "^8.30.0"
     }
-  }
-  
+}
