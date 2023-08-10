@@ -27,3 +27,12 @@ Please make sure your pull request follows the guidelines below:
 - Commit messages are concise
 - PR description clearly explains changes
 - Documentation is updated as needed
+
+## Setting up the python environment:
+
+- `git clone <repo>`
+- `cd <repo>`
+- `pip install virtualenv` (if you don't already have virtualenv installed)
+- `virtualenv venv` to create your new environment (called 'venv' here)
+- `source venv/bin/activate` to enter the virtual environment
+- `pip install -r requirements.txt` to install the requirements in the current environment
