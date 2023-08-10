@@ -3,6 +3,7 @@ MongoDB database initialization
 """
 # # Installed # #
 from pymongo.mongo_client import MongoClient
+from pymongo import ASCENDING
 from pymongo.collection import Collection
 
 # # Package # #
@@ -21,3 +22,4 @@ else:
 
 RepositoryCollection: Collection = db.repository
 ProjectCollection: Collection = db.projects
+RepositoryCollection.create_index([('name', ASCENDING)], unique=True)
