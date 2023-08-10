@@ -1,5 +1,6 @@
 pymongo==4.4.1
-pydantic==1.1
+pydantic==2.1.1
 pandas==2.0.3
 requests==2.31.0
 fastapi==0.100.1
+pydantic-settings==2.0.2
