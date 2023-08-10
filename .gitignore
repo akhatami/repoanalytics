@@ -1,6 +1,8 @@
 config.js
 node_modules
 repoinsights-env
+repoinsights
 scripts/.env
 __pycache__/
 .vscode
+target
