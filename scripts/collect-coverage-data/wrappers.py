@@ -1,6 +1,8 @@
 """WRAPPERS
 Methods to interact with the database
 """
+from bson import ObjectId
+from typing import List, Dict, Union, Tuple
 
 # # Package # #
 from .models.repository import Repository
@@ -12,60 +14,66 @@ __all__ = ("RepositoryWrapper", "ProjectWrapper")
 
 class RepositoryWrapper:
     @staticmethod
-    def get(repository_id: str = None, name: str = None) -> Repository:
+    def get_by_id(repository_id: str) -> Repository:
         """Retrieve a single Repository by its unique id"""
         document = None
         if repository_id is not None:
-            document = RepositoryCollection.find_one({"_id": repository_id})
-        else:
-            document = RepositoryCollection.find_one({"name": name})
+            document = RepositoryCollection.find_one({"_id": ObjectId(repository_id)})
         if not document:
             # raise RepositoryNotFoundException(repository_id)
             print(f"RepositoryNotFoundException({repository_id})")
         return document
-
+    
     @staticmethod
-    def list() -> [Repository]:
+    def read_by_name(name: str) -> Repository:
+        document = RepositoryCollection.find_one({"name": name})
+        if document:
+            return Repository(**document)
+        return None
+    
+    @staticmethod
+    def read_by_id(self, document_id: ObjectId) -> Repository:
+        document = RepositoryCollection.find_one({"_id": document_id})
+        if document:
+            return Repository(**document)
+        return None
+    
+    @staticmethod
+    def list_all() -> List[Repository]:
         """Retrieve all the available repositories"""
         cursor = RepositoryCollection.find()
-        return [document for document in cursor]
-
+        return [Repository(**document) for document in cursor]
+    
     @staticmethod
-    def create(document: Repository) -> Repository:
-        """Create a repository and return its Read object"""
-        if RepositoryWrapper.get(name=document.name) is None:
-            result = RepositoryCollection.insert_one(document.model_dump())
-            id = result._id
+    def read(query: Dict[str, Union[str, int]] = None) -> List[Repository]:
+        """Retrieve by query"""
+        if query is None:
+            query = {}
+        documents = RepositoryCollection.find(query)
+        return [Repository(**doc) for doc in documents]
+    
+    @staticmethod
+    def create_or_update(data: Repository) -> Tuple[str, ObjectId]:
+        existing_record = RepositoryCollection.find_one({"name": data.name})
+        if existing_record:
+            data_dict = data.model_dump()
+            del data_dict["_id"]
+            del data_dict["created_at"]
+            result = RepositoryCollection.update_one({"_id": data._id}, {"$set": data_dict})
+            return "Updated", data._id
         else:
-            RepositoryWrapper.update(document._id, document)
-            id = document._id
-        return RepositoryWrapper.get(id)
+            inserted_id = RepositoryCollection.insert_one(data.model_dump()).inserted_id
+            return "Inserted", inserted_id
 
     @staticmethod
-    def update(repository_id: str, update: Repository):
-        """Update a repository by giving only the fields to update"""
-        document = update.model_dump()
-        document["updated"] = get_time()
-
-        result = RepositoryCollection.update_one(
-            {"_id": repository_id}, {"$set": document})
-
-        if not result.modified_count:
-            # raise RepositoryNotFoundException(identifier=repository_id)
-            print(f"RepositoryNotFoundException(identifier={repository_id})")
-
+    def delete(self, document_id: ObjectId) -> int:
+        result = RepositoryCollection.delete_one({"_id": document_id})
+        return result.deleted_count
+    
     @staticmethod
-    def delete(repository_id: str = None, name: str = None):
-        """Delete a repository given its unique id or name"""
-        if repository_id is None:
-            result = RepositoryCollection.delete_one({"name": name})
-        else:
-            result = RepositoryCollection.delete_one({"_id": repository_id})
-
-        if not result.deleted_count:
-            # raise RepositoryNotFoundException(identifier=repository_id)
-            print(
-                f"raise RepositoryNotFoundException(identifier={repository_id})")
+    def delete_by_name(self, name: str) -> int:
+        result = RepositoryCollection.delete_one({"name": name})
+        return result.deleted_count
 
 
 class ProjectWrapper:
