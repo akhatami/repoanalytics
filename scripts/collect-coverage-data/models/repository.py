@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from bson import ObjectId
 
 from ...utils import get_uuid, get_time
 
@@ -6,7 +7,7 @@ __all__ = ("Repository",)
 
 
 class Repository(BaseModel):
-    _id: str = get_uuid()
+    _id: ObjectId
     name: str
     language: str
     default_branch: str
