@@ -6,10 +6,11 @@ from typing import List, Dict, Union, Tuple
 
 # # Package # #
 from .models.repository import Repository
-from .database import RepositoryCollection, ProjectCollection
+from .models.codecov_coverage_trend import CodecovCoverageTrend
+from .database import RepositoryCollection, ProjectCollection, CodecovCoverageCollection
 from ..utils import get_time, get_uuid
 
-__all__ = ("RepositoryWrapper", "ProjectWrapper")
+__all__ = ("RepositoryWrapper", "ProjectWrapper", "CodeCoverageWrapper")
 
 
 class RepositoryWrapper:
@@ -53,14 +54,14 @@ class RepositoryWrapper:
         return [Repository(**doc) for doc in documents]
     
     @staticmethod
-    def create_or_update(data: Repository) -> Tuple[str, ObjectId]:
+    def create_or_update(data: Repository) -> Tuple[str, int]:
         existing_record = RepositoryCollection.find_one({"name": data.name})
         if existing_record:
             data_dict = data.model_dump()
-            del data_dict["_id"]
+            # del data_dict["_id"]
             del data_dict["created_at"]
-            result = RepositoryCollection.update_one({"_id": data._id}, {"$set": data_dict})
-            return "Updated", data._id
+            result = RepositoryCollection.update_one({"name": data.name}, {"$set": data_dict})
+            return "Updated", result.modified_count
         else:
             inserted_id = RepositoryCollection.insert_one(data.model_dump()).inserted_id
             return "Inserted", inserted_id
@@ -92,3 +93,17 @@ class ProjectWrapper:
         """Retrieve all the available Projects"""
         cursor = ProjectCollection.find()
         return [document for document in cursor]
+
+class CodecovCoverageTrendWrapper:
+    
+    @staticmethod
+    def save_many(data):
+        """Save json"""
+        CodecovCoverageCollection.insert_many(data)
+        print("Coverage data saved to the database")
+    
+    @staticmethod
+    def list() -> List[CodecovCoverageTrend]:
+        """Retrieve all the available records"""
+        cursor = CodecovCoverageCollection.find()
+        return [CodecovCoverageTrend(**document) for document in cursor]
