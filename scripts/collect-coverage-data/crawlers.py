@@ -2,7 +2,7 @@
 Methods to crawl data
 """
 
-import pandas as pd
+import re
 import requests
 
 # # Package # #
@@ -49,10 +49,61 @@ class CrawlerService:
         return all_results
     
     @staticmethod
+    def extract_coveralls_url(repo: Repository):
+        readme = CrawlerService.get_readme(repo.name, repo.default_branch)
+        
+        pattern1 = r'https?://coveralls\.io/github/[^/]+/[^?/]+'
+        pattern2 = r'https?://coveralls\.io/r/[^/]+/[^?/]+'
+        match1 = re.search(pattern1, readme)
+        match2 = re.search(pattern2, readme)
+        
+        if match1:
+            matched_string = match1.group()
+        elif match2:
+            matched_string = match2.group().replace('/r/', '/github/')
+        else:
+            return None
+            
+        index_of_first_backslash = matched_string.find('\\')
+        if index_of_first_backslash != -1:
+            return matched_string[:index_of_first_backslash]
+        else:
+            return matched_string
+    
+    @staticmethod
     def get_coveralls_data(repo: Repository):
-        # Call Coveralls API / crawler
-        pass
-
+        page = 0
+        coveralls_url = CrawlerService.extract_coveralls_url(repo)
+        
+        if not coveralls_url:
+            print(f'no coveralls url in readme for {repo.name}')
+            return []
+        
+        all_results = []
+        
+        while len(all_results) < 1000:
+            print(page)
+            page += 1
+            sub_string = f'.json?page={page}'
+            api_url = coveralls_url + sub_string
+            response = requests.get(api_url)
+            
+            if response.status_code != 200:
+                print("Coverall API error")
+                break
+            
+            result_json = response.json()["builds"]
+            
+            if len(result_json) == 0:
+                break
+            
+            for elem in result_json:
+                for field in ['commit_message', 'committer_email', 'committer_name']:
+                    del elem[field]
+            all_results.extend(result_json)
+        
+        return all_results
+        
     @staticmethod
     def get_codeclimate_data(repo: Repository):
         # Call CodeClimate API / crawler

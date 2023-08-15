@@ -7,7 +7,8 @@ from typing import List, Dict, Union, Tuple
 # # Package # #
 from .models.repository import Repository
 from .models.codecov_coverage_trend import CodecovCoverageTrend
-from .database import RepositoryCollection, ProjectCollection, CodecovCoverageCollection
+from .models.coveralls_coverage import CoverallsCoverage
+from .database import RepositoryCollection, ProjectCollection, CodecovCoverageCollection, CoverallsCoverageCollection
 from ..utils import get_time, get_uuid
 
 __all__ = ("RepositoryWrapper", "ProjectWrapper", "CodeCoverageWrapper")
@@ -100,10 +101,27 @@ class CodecovCoverageTrendWrapper:
     def save_many(data):
         """Save json"""
         CodecovCoverageCollection.insert_many(data)
-        print("Coverage data saved to the database")
     
     @staticmethod
     def list() -> List[CodecovCoverageTrend]:
         """Retrieve all the available records"""
         cursor = CodecovCoverageCollection.find()
         return [CodecovCoverageTrend(**document) for document in cursor]
+
+class CoverallsCoverageWrapper:
+    
+    @staticmethod
+    def save_many(data):
+        """Save json"""
+        CoverallsCoverageCollection.insert_many(data)
+    
+    @staticmethod
+    def distinct_repos() -> List[str]:
+        return CoverallsCoverageCollection.distinct('repo_name')
+        
+    @staticmethod
+    def list() -> List[CoverallsCoverage]:
+        """Retrieve all the available records"""
+        cursor = CoverallsCoverageCollection.find()
+        return [CoverallsCoverage(**document) for document in cursor]
+    

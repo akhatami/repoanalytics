@@ -1,5 +1,5 @@
 from .models.repository import Repository
-from .wrappers import RepositoryWrapper, ProjectWrapper, CodecovCoverageTrendWrapper
+from .wrappers import RepositoryWrapper, ProjectWrapper, CodecovCoverageTrendWrapper, CoverallsCoverageWrapper
 from .crawlers import CrawlerService
 
 def add_coverage_tool():
@@ -48,13 +48,25 @@ def add_coverage_tool():
         if index == 100:
             break
 
-def collect():
+def collect_codecov():
     codecov_repos = RepositoryWrapper.read(query={"has_codecov": 1})
     for repo in codecov_repos:
         data = CrawlerService.get_codecov_data(repo)
         if len(data) == 0:
             continue 
         CodecovCoverageTrendWrapper.save_many(data)
-    
+
+def collect_coveralls():
+    coverall_repos = RepositoryWrapper.read(query={"has_coveralls": 1})
+    collected_repos = [x.lower() for x in CoverallsCoverageWrapper.distinct_repos()]
+    for repo in coverall_repos:
+        if repo.name in collected_repos:
+            continue
+        data = CrawlerService.get_coveralls_data(repo)
+        if len(data) == 0:
+            continue 
+        CoverallsCoverageWrapper.save_many(data)
+        
 # add_coverage_tool()
-# collect()
+# collect_codecov()
+# collect_coveralls()
