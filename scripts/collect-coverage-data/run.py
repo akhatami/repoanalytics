@@ -1,5 +1,5 @@
 from .models.repository import Repository
-from .wrappers import RepositoryWrapper, ProjectWrapper, CodecovCoverageTrendWrapper, CoverallsCoverageWrapper
+from .wrappers import *
 from .crawlers import CrawlerService
 
 def add_coverage_tool():

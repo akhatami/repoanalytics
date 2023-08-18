@@ -8,10 +8,10 @@ from typing import List, Dict, Union, Tuple
 from .models.repository import Repository
 from .models.codecov_coverage_trend import CodecovCoverageTrend
 from .models.coveralls_coverage import CoverallsCoverage
-from .database import RepositoryCollection, ProjectCollection, CodecovCoverageCollection, CoverallsCoverageCollection
+from .database import *
 from ..utils import get_time, get_uuid
 
-__all__ = ("RepositoryWrapper", "ProjectWrapper", "CodeCoverageWrapper")
+__all__ = ("RepositoryWrapper", "ProjectWrapper", "CodecovCoverageTrendWrapper", "CoverallsCoverageWrapper")
 
 
 class RepositoryWrapper:
@@ -117,6 +117,7 @@ class CoverallsCoverageWrapper:
     
     @staticmethod
     def distinct_repos() -> List[str]:
+        """Retrieve distinct repos"""
         return CoverallsCoverageCollection.distinct('repo_name')
         
     @staticmethod
