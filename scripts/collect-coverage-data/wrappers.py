@@ -5,9 +5,7 @@ from bson import ObjectId
 from typing import List, Dict, Union, Tuple
 
 # # Package # #
-from .models.repository import Repository
-from .models.codecov_coverage_trend import CodecovCoverageTrend
-from .models.coveralls_coverage import CoverallsCoverage
+from .models import *
 from .database import *
 from ..utils import get_time, get_uuid
 

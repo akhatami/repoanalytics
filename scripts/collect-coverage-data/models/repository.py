@@ -3,9 +3,6 @@ from bson import ObjectId
 
 from ...utils import get_uuid, get_time
 
-__all__ = ("Repository",)
-
-
 class Repository(BaseModel):
     _id: ObjectId
     name: str

@@ -1,4 +1,4 @@
-from .models.repository import Repository
+from .models import Repository
 from .wrappers import *
 from .crawlers import CrawlerService
 
