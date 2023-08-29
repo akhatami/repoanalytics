@@ -2,7 +2,11 @@ config.js
 node_modules
 repoinsights-env
 repoinsights
-scripts/.env
+server/nodemodules
+data-collectors/.env
 __pycache__/
 .vscode
 target
+react-app/.env
+react-app/node_modules
+server/.env
