@@ -10,3 +10,5 @@ target
 react-app/.env
 react-app/node_modules
 server/.env
+.idea
+.DS_Store
