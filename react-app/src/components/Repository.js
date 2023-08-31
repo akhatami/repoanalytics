@@ -1,7 +1,10 @@
 import React, {useEffect, useState} from 'react';
 import {useParams} from 'react-router-dom';
 import axios from 'axios';
-import { Link } from 'react-router-dom'
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
 
 function Repository() {
     const { user, repo_name } = useParams();
@@ -19,7 +22,6 @@ function Repository() {
 
         fetchRepoDetails()
             .then(response => {
-                console.log('data ' + JSON.stringify(response.data));
                 if(!response){
                     setRepo(null);
                 }
@@ -34,26 +36,31 @@ function Repository() {
 
     return (
         <>
-            <Link to='/'>Repositories</Link>
-            <h1>Repository name is: {user+'/'+repo_name}</h1>
+
+            <Card>
             {repo ? (
-                Object.keys(repo).length !== 0 ? (
-                    <div>
-                        <h3>Name: {repo.name}</h3>
-                        <p>Language: {repo.language}</p>
-                        <p>Default Branch: {repo.default_branch}</p>
-                        <p>Has Codecov: {repo.has_codecov ? 'Yes' : 'No'}</p>
-                        <p>Has Coveralls: {repo.has_coveralls ? 'Yes' : 'No'}</p>
-                        <p>Has Codeclimate: {repo.has_codeclimate ? 'Yes' : 'No'}</p>
-                        <p>Created At: {new Date(repo.created_at * 1000).toLocaleString()}</p>
-                        <p>Updated At: {new Date(repo.updated_at * 1000).toLocaleString()}</p>
-                    </div>
+                repo[0] !== 'NOT FOUND' ? (
+
+                    <CardContent>
+                        <Button variant="outlined" href="/">Other Repositories</Button>
+                        <Typography variant={"h5"}>Name: {repo.name}</Typography>
+                        <Typography>Language: {repo.language}</Typography>
+                        <Typography>Default Branch: {repo.default_branch}</Typography>
+                        <Typography>Has Codecov: {repo.has_codecov ? 'Yes' : 'No'}</Typography>
+                        <Typography>Has Coveralls: {repo.has_coveralls ? 'Yes' : 'No'}</Typography>
+                        <Typography>Has Codeclimate: {repo.has_codeclimate ? 'Yes' : 'No'}</Typography>
+                        <Typography>Created At: {new Date(repo.created_at * 1000).toLocaleString()}</Typography>
+                        <Typography>Updated At: {new Date(repo.updated_at * 1000).toLocaleString()}</Typography>
+                    </CardContent>
+
+
                 ) : (
-                    <p>Repo not found.</p>
+                    <Typography>Repo not found.</Typography>
                 )
             ) : (
-                <p>Loading...</p>
+                <Typography>Loading...</Typography>
             )}
+            </Card>
         </>
     );
 }

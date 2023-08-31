@@ -1,7 +1,8 @@
 import React, {useState, useEffect, useCallback} from 'react';
 import axios from 'axios';
 
-import Pagination from "./Pagination";
+// import Pagination from "./Pagination";
+import {List, ListItemButton, ListItemText, Pagination} from "@mui/material";
 
 function RepositoryList() {
 
@@ -43,18 +44,27 @@ function RepositoryList() {
 
     return (
         <>
-            <ul>
+            {/*<ul>*/}
+            {/*    {repositories.map(repo => (*/}
+            {/*        <li key={repo._id}>*/}
+            {/*            <a href={"/"+repo.name}>{repo.name}</a>*/}
+            {/*        </li>*/}
+            {/*    ))}*/}
+            {/*</ul>*/}
+            <List>
                 {repositories.map(repo => (
-                    <li key={repo._id}>
-                        <a href={"/"+repo.name}>{repo.name}</a>
-                    </li>
+                    <ListItemButton key={repo._id} button component="a" href={`/${repo.name}`}>
+                        <ListItemText primary={repo.name} />
+                    </ListItemButton>
                 ))}
-            </ul>
+            </List>
             <Pagination
-                total={totalCount}
+                count={Math.ceil(totalCount / perPage)}
                 page={page}
                 perPage={perPage}
-                onPageChange={handlePageChange}
+                variant="outlined"
+                color="primary"
+                onChange={handlePageChange}
             />
         </>
     );

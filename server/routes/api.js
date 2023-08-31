@@ -25,7 +25,6 @@ router.get('/repo/:user/:repo_name', async (req, res) => {
     const user = req.params.user;
     const repo_name = req.params.repo_name;
     const name = user + '/' + repo_name;
-    console.log(name);
     let data;
     try {
         data = await Repository.find({'name': name});
@@ -33,8 +32,13 @@ router.get('/repo/:user/:repo_name', async (req, res) => {
         console.error('Error fetching repo details:', error);
         data = [{}];
     }
-    console.log(data)
-    res.json(data[0]);
+    console.log(data);
+    if (Object.keys(data).length === 0){
+        res.json(['NOT FOUND']);
+    } else {
+        res.json(data[0]);
+    }
+
 });
 
 module.exports = router;
