@@ -15,7 +15,7 @@ function RepositoryList() {
         return axios.get('/api/repositories', {
             params: {page, perPage}
         }).then(response => {
-            console.log(response.data);
+            console.log(page, perPage);
             return response;
         })
             .catch(error => {
@@ -38,19 +38,12 @@ function RepositoryList() {
             });
     }, [getRepositories]);
 
-    const handlePageChange = (page) => {
+    const handlePageChange = (event, page) => {
         setPage(page);
     }
 
     return (
         <>
-            {/*<ul>*/}
-            {/*    {repositories.map(repo => (*/}
-            {/*        <li key={repo._id}>*/}
-            {/*            <a href={"/"+repo.name}>{repo.name}</a>*/}
-            {/*        </li>*/}
-            {/*    ))}*/}
-            {/*</ul>*/}
             <List>
                 {repositories.map(repo => (
                     <ListItemButton key={repo._id} button component="a" href={`/${repo.name}`}>
