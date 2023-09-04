@@ -5,6 +5,7 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
+import CodecovCard from "./CodecovCard";
 
 function Repository() {
     const { user, repo_name } = useParams();
@@ -36,31 +37,30 @@ function Repository() {
 
     return (
         <>
-
-            <Card>
+            <Button variant="outlined" href="/">Other Repositories</Button>
             {repo ? (
                 repo[0] !== 'NOT FOUND' ? (
-
-                    <CardContent>
-                        <Button variant="outlined" href="/">Other Repositories</Button>
-                        <Typography variant={"h5"}>Name: {repo.name}</Typography>
-                        <Typography>Language: {repo.language}</Typography>
-                        <Typography>Default Branch: {repo.default_branch}</Typography>
-                        <Typography>Has Codecov: {repo.has_codecov ? 'Yes' : 'No'}</Typography>
-                        <Typography>Has Coveralls: {repo.has_coveralls ? 'Yes' : 'No'}</Typography>
-                        <Typography>Has Codeclimate: {repo.has_codeclimate ? 'Yes' : 'No'}</Typography>
-                        <Typography>Created At: {new Date(repo.created_at * 1000).toLocaleString()}</Typography>
-                        <Typography>Updated At: {new Date(repo.updated_at * 1000).toLocaleString()}</Typography>
-                    </CardContent>
-
-
+                    <Card>
+                        <CardContent>
+                            <Typography variant={"h5"}>Name: {repo.name}</Typography>
+                            <Typography>Language: {repo.language}</Typography>
+                            <Typography>Default Branch: {repo.default_branch}</Typography>
+                            <Typography>Has Codecov: {repo.has_codecov ? 'Yes' : 'No'}</Typography>
+                            <Typography>Has Coveralls: {repo.has_coveralls ? 'Yes' : 'No'}</Typography>
+                            <Typography>Has Codeclimate: {repo.has_codeclimate ? 'Yes' : 'No'}</Typography>
+                            <Typography>Created At: {new Date(repo.created_at * 1000).toLocaleString()}</Typography>
+                            <Typography>Updated At: {new Date(repo.updated_at * 1000).toLocaleString()}</Typography>
+                        </CardContent>
+                    </Card>
                 ) : (
-                    <Typography>Repo not found.</Typography>
+                    <Typography>Repo not found.</Typography> // improve later: 404 page
                 )
             ) : (
-                <Typography>Loading...</Typography>
+                <Typography>Loading...</Typography> // improve later: better UI/UX
             )}
-            </Card>
+            <CodecovCard
+                repo_handle={user+'/'+repo_name}
+            />
         </>
     );
 }
