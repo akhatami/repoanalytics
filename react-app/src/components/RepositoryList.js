@@ -1,7 +1,6 @@
 import React, {useState, useEffect, useCallback} from 'react';
 import axios from 'axios';
 import {List, ListItemButton, ListItemIcon, ListItemText, Pagination} from "@mui/material";
-import { Css } from "@mui/icons-material";
 import CodecovIcon from "./custom_icons/CodecovIcon";
 import CoverallsIcon from "./custom_icons/CoverallsIcon";
 
@@ -51,7 +50,7 @@ function RepositoryList() {
                         <ListItemText primary={repo.name} />
                         <ListItemIcon>
                             {repo.has_codecov === 1 ? (
-                                    <CodecovIcon />
+                                <CodecovIcon />
                             ) : null }
                             {repo.has_coveralls === 1 ? (
                                 <CoverallsIcon />
