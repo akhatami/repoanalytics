@@ -37,12 +37,12 @@ export const options = {
         },
     },
 };
-function CodecovCard({ repo_handle }){
+function CoverallsCard({ repo_handle }){
     const [chartData, setChartData] = useState(null);
     useEffect(() => {
         async function fetchCodecovDetails() {
             try {
-                const response = await axios.get(`/api/codecov/${repo_handle}`);
+                const response = await axios.get(`/api/coveralls/${repo_handle}`);
                 return response.data;
             } catch (error) {
                 console.error('Error fetching repo details:', error);
@@ -61,16 +61,16 @@ function CodecovCard({ repo_handle }){
                     let datasetData = [];
 
                     for (let coverage of data) {
-                        const date = new Date(coverage.timestamp);
+                        const date = new Date(coverage.created_at);
                         const options = { year: 'numeric', month: 'short', day: 'numeric' };
                         const dateString = date.toLocaleDateString(undefined, options);
                         labels.push(dateString);
-                        datasetData.push(coverage.avg);
+                        datasetData.push(coverage.covered_percent);
                     }
 
                     // if (labels.length > 50){
-                    //     labels = labels.slice(-50);
-                    //     datasetData = datasetData.slice(-50);
+                    //     labels = labels.slice(50);
+                    //     datasetData = datasetData.slice(50);
                     // }
 
                     setChartData({
@@ -97,13 +97,13 @@ function CodecovCard({ repo_handle }){
         <>
             <Card>
                 <CardContent>
-                    <Typography variant={"h5"}>Codecov code coverage</Typography>
+                    <Typography variant={"h5"}>Coveralls code coverage</Typography>
                     {chartData ? (
-                    chartData[0] !== 'NOT FOUND' ? (
-                        <Line options={options} data={chartData} />
-                    ) : (
-                        <Typography>NOT FOUND</Typography>
-                    )
+                        chartData[0] !== 'NOT FOUND' ? (
+                            <Line options={options} data={chartData} />
+                        ) : (
+                            <Typography>NOT FOUND</Typography>
+                        )
                     ) : (
                         <Typography>Loading...</Typography>
                     )}
@@ -112,4 +112,4 @@ function CodecovCard({ repo_handle }){
         </>
     );
 }
-export default CodecovCard;
+export default CoverallsCard;

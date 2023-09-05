@@ -6,6 +6,7 @@ import CardContent from '@mui/material/CardContent';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import CodecovCard from "./CodecovCard";
+import CoverallsCard from "./CoverallsCard";
 
 function Repository() {
     const { user, repo_name } = useParams();
@@ -57,6 +58,9 @@ function Repository() {
                 <Typography>Loading...</Typography> // improve later: better UI/UX
             )}
             <CodecovCard
+                repo_handle={user+'/'+repo_name}
+            />
+            <CoverallsCard
                 repo_handle={user+'/'+repo_name}
             />
         </>
