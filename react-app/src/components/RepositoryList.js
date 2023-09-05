@@ -15,7 +15,6 @@ function RepositoryList() {
         return axios.get('/api/repositories', {
             params: {page, perPage}
         }).then(response => {
-            console.log(page, perPage);
             return response;
         })
             .catch(error => {
@@ -62,7 +61,6 @@ function RepositoryList() {
             <Pagination
                 count={Math.ceil(totalCount / perPage)}
                 page={page}
-                perPage={perPage}
                 variant="outlined"
                 color="primary"
                 onChange={handlePageChange}

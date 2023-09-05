@@ -1,13 +1,15 @@
 import RepositoryList from "./RepositoryList";
+import ResponsiveAppBar from "./ResponsiveAppBar";
 
 const Home = () => {
     return (
-        <div>
+        <>
+        <ResponsiveAppBar/>
             <h1>Repositories</h1>
             <div>
                 <RepositoryList />
             </div>
-        </div>
+        </>
     );
 }
 

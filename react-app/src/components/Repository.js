@@ -3,10 +3,11 @@ import {useParams} from 'react-router-dom';
 import axios from 'axios';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import Button from '@mui/material/Button';
+// import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import CodecovCard from "./CodecovCard";
 import CoverallsCard from "./CoverallsCard";
+import ResponsiveAppBar from "./ResponsiveAppBar";
 
 function Repository() {
     const { user, repo_name } = useParams();
@@ -38,7 +39,8 @@ function Repository() {
 
     return (
         <>
-            <Button variant="outlined" href="/">Other Repositories</Button>
+            <ResponsiveAppBar/>
+            {/*<Button variant="outlined" href="/">Other Repositories</Button>*/}
             {repo ? (
                 repo[0] !== 'NOT FOUND' ? (
                     <Card>
