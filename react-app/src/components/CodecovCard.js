@@ -97,6 +97,7 @@ function CodecovCard({ repo_handle }){
         <>
             <Card>
                 <CardContent>
+                    <Typography variant={"h5"}>Codecov code coverage</Typography>
             {chartData ? (
                 chartData[0] !== 'NOT FOUND' ? (
                     <Line options={options} data={chartData} />

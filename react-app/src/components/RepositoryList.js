@@ -1,8 +1,9 @@
 import React, {useState, useEffect, useCallback} from 'react';
 import axios from 'axios';
-
-// import Pagination from "./Pagination";
-import {List, ListItemButton, ListItemText, Pagination} from "@mui/material";
+import {List, ListItemButton, ListItemIcon, ListItemText, Pagination} from "@mui/material";
+import { Css } from "@mui/icons-material";
+import CodecovIcon from "./custom_icons/CodecovIcon";
+import CoverallsIcon from "./custom_icons/CoverallsIcon";
 
 function RepositoryList() {
 
@@ -48,6 +49,14 @@ function RepositoryList() {
                 {repositories.map(repo => (
                     <ListItemButton key={repo._id} button component="a" href={`/${repo.name}`}>
                         <ListItemText primary={repo.name} />
+                        <ListItemIcon>
+                            {repo.has_codecov === 1 ? (
+                                    <CodecovIcon />
+                            ) : null }
+                            {repo.has_coveralls === 1 ? (
+                                <CoverallsIcon />
+                            ) : null }
+                        </ListItemIcon>
                     </ListItemButton>
                 ))}
             </List>

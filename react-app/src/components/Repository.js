@@ -48,8 +48,6 @@ function Repository() {
                             <Typography>Has Codecov: {repo.has_codecov ? 'Yes' : 'No'}</Typography>
                             <Typography>Has Coveralls: {repo.has_coveralls ? 'Yes' : 'No'}</Typography>
                             <Typography>Has Codeclimate: {repo.has_codeclimate ? 'Yes' : 'No'}</Typography>
-                            <Typography>Created At: {new Date(repo.created_at * 1000).toLocaleString()}</Typography>
-                            <Typography>Updated At: {new Date(repo.updated_at * 1000).toLocaleString()}</Typography>
                         </CardContent>
                     </Card>
                 ) : (
