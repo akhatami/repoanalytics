@@ -3,7 +3,7 @@ node_modules
 repoinsights-env
 repoinsights
 server/nodemodules
-data-collectors/.env
+data_collectors/.env
 __pycache__/
 .vscode
 target

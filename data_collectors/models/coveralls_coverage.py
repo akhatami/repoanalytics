@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from bson import ObjectId
 
+
 class CoverallsCoverage(BaseModel):
     _id: ObjectId
     repo_name: str
@@ -18,6 +19,5 @@ class CoverallsCoverage(BaseModel):
     missed_branches: int
     relevant_branches: int
 
-    
     class Config:
         arbitrary_types_allowed = True

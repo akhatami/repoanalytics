@@ -1,15 +1,13 @@
 """WRAPPERS
 Methods to interact with the database
 """
-from bson import ObjectId
 from typing import List, Dict, Union, Tuple
 
 # # Package # #
-from .models import *
-from .database import *
-from ..utils import get_time, get_uuid
+from data_collectors.models import *
+from data_collectors.database import *
 
-__all__ = ("RepositoryWrapper", "ProjectWrapper", "CodecovCoverageTrendWrapper", "CoverallsCoverageWrapper")
+__all__ = ("RepositoryWrapper", "ProjectWrapper", "CodecovCoverageTrendWrapper", "CoverallsCoverageWrapper", "PullRequestsWrapper")
 
 
 class RepositoryWrapper:
@@ -123,4 +121,20 @@ class CoverallsCoverageWrapper:
         """Retrieve all the available records"""
         cursor = CoverallsCoverageCollection.find()
         return [CoverallsCoverage(**document) for document in cursor]
+    
+class PullRequestsWrapper:
+    
+    @staticmethod
+    def save_many(data):
+        """Save json"""
+        PullRequestsCollection.insert_many(data)
+        
+    @staticmethod
+    def get(id: str):
+        """Retrieve a single Project records by its name"""
+        document = PullRequestsCollection.find_one({"id": id})
+        if not document:
+            # print(f"raise PullRequestNotFoundException({id})")
+            return None
+        return document
     

@@ -1,5 +1,5 @@
-from .models import Repository
-from .wrappers import *
+from data_collectors.models import Repository
+from data_collectors.wrappers import *
 from .crawlers import CrawlerService
 
 def add_coverage_tool():

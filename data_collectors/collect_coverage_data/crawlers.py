@@ -6,7 +6,7 @@ import re
 import requests
 
 # # Package # #
-from .models import Repository
+from data_collectors.models import Repository
 from ..config import settings
 
 class CrawlerService:

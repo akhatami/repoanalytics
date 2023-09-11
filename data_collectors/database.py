@@ -7,28 +7,34 @@ from pymongo import ASCENDING
 from pymongo.collection import Collection
 
 # # Package # #
-from scripts.config import settings
+from data_collectors.config import settings
 
-__all__ = ("client", "RepositoryCollection", "ProjectCollection", "CodecovCoverageCollection", "CoverallsCoverageCollection")
+__all__ = ("client", "RepositoryCollection", "ProjectCollection", "CodecovCoverageCollection",
+           "CoverallsCoverageCollection", "PullRequestsCollection")
 
 client = MongoClient(settings.DATABASE_URL)
 db = client[settings.MONGO_INITDB_DATABASE]
-collist = db.list_collection_names()
+collList = db.list_collection_names()
 
-if 'repository' not in collist:
+if 'repository' not in collList:
     RepositoryCollection: Collection = db["repository"]
 else:
     RepositoryCollection: Collection = db.repository
     
-if 'codecov_coverage_trend' not in collist:
+if 'codecov_coverage_trend' not in collList:
     CodecovCoverageCollection: Collection = db["codecov_coverage_trend"]
 else:
     CodecovCoverageCollection: Collection = db.codecov_coverage_trend
 
-if 'coveralls_coverage' not in collist:
+if 'coveralls_coverage' not in collList:
     CoverallsCoverageCollection: Collection = db["coveralls_coverage"]
 else:
     CoverallsCoverageCollection: Collection = db.coveralls_coverage
+
+if 'pull_requests' not in collList:
+    PullRequestsCollection: Collection = db["pull_requests"]
+else:
+    PullRequestsCollection: Collection = db.pull_requests
     
 
 ProjectCollection: Collection = db.projects

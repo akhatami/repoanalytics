@@ -1,7 +1,8 @@
 from pydantic import BaseModel
 from bson import ObjectId
 
-from ...utils import get_uuid, get_time
+from data_collectors.utils import get_time
+
 
 class Repository(BaseModel):
     _id: ObjectId
