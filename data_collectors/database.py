@@ -10,7 +10,8 @@ from pymongo.collection import Collection
 from data_collectors.config import settings
 
 __all__ = ("client", "RepositoryCollection", "ProjectCollection", "CodecovCoverageCollection",
-           "CoverallsCoverageCollection", "PullRequestCollection", "CommitStatusCheckCollection")
+           "CoverallsCoverageCollection", "PullRequestCollection", "CommitStatusCheckCollection",
+           "RepositoryDetailsCollection")
 
 client = MongoClient(settings.DATABASE_URL)
 db = client[settings.MONGO_INITDB_DATABASE]
@@ -40,6 +41,11 @@ if 'commit_status_check' not in collList:
     CommitStatusCheckCollection: Collection = db["commit_status_check"]
 else:
     CommitStatusCheckCollection: Collection = db.commit_status_check
+
+if 'repository_details' not in collList:
+    RepositoryDetailsCollection: Collection = db["repository_details"]
+else:
+    RepositoryDetailsCollection: Collection = db.repository_details
     
 
 ProjectCollection: Collection = db.projects

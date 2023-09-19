@@ -8,7 +8,8 @@ from data_collectors.models import *
 from data_collectors.database import *
 
 __all__ = ("RepositoryWrapper", "ProjectWrapper", "CodecovCoverageTrendWrapper", 
-           "CoverallsCoverageWrapper", "PullRequestWrapper", "CommitStatusCheckWrapper")
+           "CoverallsCoverageWrapper", "PullRequestWrapper", "CommitStatusCheckWrapper", 
+           "RepositoryDetailsWrapper")
 
 
 class RepositoryWrapper:
@@ -36,6 +37,10 @@ class RepositoryWrapper:
         if document:
             return Repository(**document)
         return None
+    
+    @staticmethod
+    def count_all(query: Dict[str, Union[str, int]] = None):
+        return RepositoryCollection.count_documents(query)
     
     @staticmethod
     def list_all() -> List[Repository]:
@@ -174,4 +179,24 @@ class CommitStatusCheckWrapper:
             # print(f"raise CommitStatusCheckNotFoundException({id})")
             return None
         return document
+
+class RepositoryDetailsWrapper:
+    
+    @staticmethod
+    def save_many(data):
+        """Save json"""
+        RepositoryDetailsCollection.insert_many(data)
+    
+    @staticmethod
+    def save_one(data):
+        """Save json"""
+        RepositoryDetailsCollection.insert_one(data)
+    
+    @staticmethod
+    def read(query: Dict[str, Union[str, int]] = None):
+        """Retrieve by query"""
+        if query is None:
+            query = {}
+        documents = RepositoryDetailsCollection.find(query)
+        return documents
     

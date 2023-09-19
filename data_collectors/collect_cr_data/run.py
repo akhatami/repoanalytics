@@ -3,6 +3,7 @@ from data_collectors.wrappers import *
 import requests
 import logging
 import time
+from ..config import settings
 
 # Save logs
 LOGGER = logging.getLogger('logger')
@@ -19,7 +20,7 @@ LOGGER.setLevel(logging.INFO)
 # LOGGER.addHandler(FILE_HANDLER)
 
 # GitHub access token
-github_access_token = "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"
+github_access_token = settings.GITHUB_ACCESS_TOKEN
 
 # Define GraphQL query
 graphql_query = '''

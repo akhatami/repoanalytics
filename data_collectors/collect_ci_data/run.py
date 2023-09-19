@@ -1,8 +1,8 @@
-from data_collectors.models import Repository
 from data_collectors.wrappers import *
 import requests
 import logging
 import time
+from ..config import settings
 
 # Save logs
 LOGGER = logging.getLogger('logger')
@@ -19,7 +19,7 @@ LOGGER.setLevel(logging.INFO)
 # LOGGER.addHandler(FILE_HANDLER)
 
 # GitHub access token
-github_access_token = "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"
+github_access_token = settings.GITHUB_ACCESS_TOKEN
 
 # Define GraphQL query
 graphql_query = '''
@@ -147,14 +147,7 @@ def fetch_and_store_commits_of_pr(repo_name, owner, pull_request_number):
             LOGGER.info(f"Saving commit {commit_index} of {pull_request_data['commits']['totalCount']} for {owner}/{repo_name}")
             CommitStatusCheckWrapper.save_one(result)
 
-skip_repositories = ["dropwizard/dropwizard", "movingblocks/terasology", "jsqlparser/jsqlparser", 
-                     "rajawali/rajawali", "opentripplanner/opentripplanner", "fluentlenium/fluentlenium", 
-                     "stripe/stripe-java", "zxing/zxing", "alibaba/fastjson", "alibaba/druid",
-                     "pgjdbc/pgjdbc", "fasterxml/jackson-core", "togglz/togglz",
-                     "oshi/oshi", "anysoftkeyboard/anysoftkeyboard", "find-sec-bugs/find-sec-bugs",
-                     "apache/dubbo", "pmd/pmd", "zeromq/jeromq", "mockito/mockito",
-                     "openrefine/openrefine", "azkaban/azkaban", "oracle/opengrok",
-                     "reactivex/rxjava"]
+skip_repositories = [""]
 pullRequests = PullRequestWrapper.read({"repository":{"$nin": skip_repositories}})
 count_all_pr = PullRequestWrapper.count_all({"repository":{"$nin": skip_repositories}})
 
