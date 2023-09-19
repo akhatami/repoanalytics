@@ -3,6 +3,7 @@ import axios from 'axios';
 import {List, ListItemButton, ListItemIcon, ListItemText, Pagination} from "@mui/material";
 import CodecovIcon from "./custom_icons/CodecovIcon";
 import CoverallsIcon from "./custom_icons/CoverallsIcon";
+import { Card, Button } from "tabler-react";
 
 function RepositoryList() {
 
@@ -58,6 +59,7 @@ function RepositoryList() {
                     </ListItemButton>
                 ))}
             </List>
+
             <Pagination
                 count={Math.ceil(totalCount / perPage)}
                 page={page}

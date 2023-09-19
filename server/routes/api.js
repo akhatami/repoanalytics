@@ -5,7 +5,9 @@ const Repository = require('../models/Repository');
 const Codecov = require('../models/Codecov');
 const Coveralls = require('../models/Coveralls');
 const PullRequest = require('../models/PullRequest');
-const CommitStatusCheck = require('../models/CommitStatusCheck')
+const CommitStatusCheck = require('../models/CommitStatusCheck');
+const RepositoryDetails = require('../models/RepositoryDetails');
+
 router.get('/repositories', async (req, res) => {
     const page = Math.max(req.query.page, 1);
     const perPage = req.query.perPage;
@@ -31,6 +33,24 @@ router.get('/repo/:user/:repo_name', async (req, res) => {
     let data;
     try {
         data = await Repository.find({'name': name});
+    } catch (error) {
+        console.error('Error fetching repo details:', error);
+        data = [{}];
+    }
+    if (Object.keys(data).length === 0){
+        res.json(['NOT FOUND']);
+    } else {
+        res.json(data[0]);
+    }
+});
+
+router.get('/repo_details/:user/:repo_name', async (req, res) => {
+    const user = req.params.user;
+    const repo_name = req.params.repo_name;
+    const repo_handle = user + '/' + repo_name;
+    let data;
+    try {
+        data = await RepositoryDetails.find({'repository': repo_handle});
     } catch (error) {
         console.error('Error fetching repo details:', error);
         data = [{}];
