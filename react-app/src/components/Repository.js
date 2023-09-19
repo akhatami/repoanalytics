@@ -8,6 +8,7 @@ import Typography from '@mui/material/Typography';
 import CodecovCard from "./CodecovCard";
 import CoverallsCard from "./CoverallsCard";
 import ResponsiveAppBar from "./ResponsiveAppBar";
+import PullRequestCard from "./PullRequestCard";
 
 function Repository() {
     const { user, repo_name } = useParams();
@@ -59,6 +60,9 @@ function Repository() {
             ) : (
                 <Typography>Loading...</Typography> // improve later: better UI/UX
             )}
+            <PullRequestCard
+                repo_handle={user+'/'+repo_name}
+            />
             <CodecovCard
                 repo_handle={user+'/'+repo_name}
             />

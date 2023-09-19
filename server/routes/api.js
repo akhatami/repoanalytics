@@ -4,7 +4,8 @@ const router = express.Router();
 const Repository = require('../models/Repository');
 const Codecov = require('../models/Codecov');
 const Coveralls = require('../models/Coveralls');
-
+const PullRequest = require('../models/PullRequest');
+const CommitStatusCheck = require('../models/CommitStatusCheck')
 router.get('/repositories', async (req, res) => {
     const page = Math.max(req.query.page, 1);
     const perPage = req.query.perPage;
@@ -86,6 +87,64 @@ router.get('/coveralls/:user/:repo_name', async (req, res) => {
         return;
     }
 
+    if (Object.keys(data).length === 0){
+        res.json(['NOT FOUND']);
+    } else {
+        res.json(data);
+    }
+});
+
+router.get('/pulls/:user/:repo_name', async (req, res) => {
+    const user = req.params.user;
+    const repo_name = req.params.repo_name;
+    const name = user + '/' + repo_name;
+    let data;
+    try {
+        data = await PullRequest.find({'repository': name}).sort({'createdAt': -1});
+    } catch (error) {
+        console.error('Error fetching repo details:', error);
+        data = [{}];
+    }
+    if (Object.keys(data).length === 0){
+        res.json(['NOT FOUND']);
+    } else {
+        res.json(data);
+    }
+});
+
+router.get('/pulls/:user/:repo_name', async (req, res) => {
+    const user = req.params.user;
+    const repo_name = req.params.repo_name;
+    const name = user + '/' + repo_name;
+    let data;
+    try {
+        data = await PullRequest.find({'repository': name}).sort({'createdAt': -1});
+    } catch (error) {
+        console.error('Error fetching repo details:', error);
+        data = [{}];
+    }
+    if (Object.keys(data).length === 0){
+        res.json(['NOT FOUND']);
+    } else {
+        res.json(data);
+    }
+});
+
+router.get('/statusChecks/:user/:repo_name/:pull_number', async (req, res) => {
+    const user = req.params.user;
+    const repo_name = req.params.repo_name;
+    const pull_number = req.params.pull_number;
+
+    const name = user + '/' + repo_name;
+
+    let data;
+    try {
+        data = await CommitStatusCheck.find({'repository': name, 'pull_request_number': pull_number});
+        console.log(data);
+    } catch (error) {
+        console.error('Error fetching status check details:', error);
+        data = [{}];
+    }
     if (Object.keys(data).length === 0){
         res.json(['NOT FOUND']);
     } else {

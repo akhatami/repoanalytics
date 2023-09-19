@@ -7,7 +7,8 @@ from typing import List, Dict, Union, Tuple
 from data_collectors.models import *
 from data_collectors.database import *
 
-__all__ = ("RepositoryWrapper", "ProjectWrapper", "CodecovCoverageTrendWrapper", "CoverallsCoverageWrapper", "PullRequestsWrapper")
+__all__ = ("RepositoryWrapper", "ProjectWrapper", "CodecovCoverageTrendWrapper", 
+           "CoverallsCoverageWrapper", "PullRequestWrapper", "CommitStatusCheckWrapper")
 
 
 class RepositoryWrapper:
@@ -122,19 +123,55 @@ class CoverallsCoverageWrapper:
         cursor = CoverallsCoverageCollection.find()
         return [CoverallsCoverage(**document) for document in cursor]
     
-class PullRequestsWrapper:
+class PullRequestWrapper:
+    
+    @staticmethod
+    def read(query: Dict[str, Union[str, int]] = None):
+        """Retrieve by query"""
+        if query is None:
+            query = {}
+        documents = PullRequestCollection.find(query)
+        return documents
+
+    @staticmethod
+    def count_all(query: Dict[str, Union[str, int]] = None):
+        return PullRequestCollection.count_documents(query)
     
     @staticmethod
     def save_many(data):
         """Save json"""
-        PullRequestsCollection.insert_many(data)
+        PullRequestCollection.insert_many(data)
         
     @staticmethod
     def get(id: str):
         """Retrieve a single Project records by its name"""
-        document = PullRequestsCollection.find_one({"id": id})
+        document = PullRequestCollection.find_one({"id": id})
         if not document:
             # print(f"raise PullRequestNotFoundException({id})")
+            return None
+        return document
+
+class CommitStatusCheckWrapper:
+    
+    @staticmethod
+    def read_pr_numbers(query: Dict[str, Union[str, int]] = None):
+        """Retrieve by query"""
+        if query is None:
+            query = {}
+        documents = CommitStatusCheckCollection.find(query, {'_id': 0, 'repository': 1, 'pull_request_number': 1})
+        return documents
+    
+    @staticmethod
+    def save_one(data):
+        """Save json"""
+        CommitStatusCheckCollection.insert_one(data)
+        
+    @staticmethod
+    def get_by_repo_and_pr(repo_handle, pr_number):
+        document = CommitStatusCheckCollection.find_one({'repository': repo_handle, 
+                                                         'pull_request_number': pr_number})
+        if not document:
+            # print(f"raise CommitStatusCheckNotFoundException({id})")
             return None
         return document
     

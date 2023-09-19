@@ -1,22 +1,42 @@
 from data_collectors.models import Repository
 from data_collectors.wrappers import *
 import requests
+import logging
+import time
 
-# Your GitHub access token
+# Save logs
+LOGGER = logging.getLogger('logger')
+STREAM_HANDLER = logging.StreamHandler()
+STREAM_HANDLER.setLevel(logging.INFO)
+LOG_FORMATTER = logging.Formatter('%(asctime)s:%(levelname)s:%(message)s')
+STREAM_HANDLER.setFormatter(LOG_FORMATTER)
+LOGGER.addHandler(STREAM_HANDLER)
+LOGGER.setLevel(logging.INFO)
+
+# logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+# FILE_HANDLER = logging.FileHandler('pull_requests_collector.log')
+# FILE_HANDLER.setFormatter(FILE_HANDLER)
+# LOGGER.addHandler(FILE_HANDLER)
+
+# GitHub access token
 github_access_token = "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"
 
-# Define your GraphQL query
+# Define GraphQL query
 graphql_query = '''
 {
   repository(name: "%s", owner: "%s") {
-    id
-    pullRequests(first: 50, orderBy: {field: CREATED_AT, direction: DESC}%s) {
+    pullRequests(first: %s, orderBy: {field: CREATED_AT, direction: DESC}%s) {
       totalCount
       nodes {
         id
         merged
-        participants {
+        participants(first: %s) {
           totalCount
+          nodes {
+            login
+            id
+            name
+          }
         }
         createdAt
         mergedAt
@@ -30,7 +50,6 @@ graphql_query = '''
         closedAt
         deletions
         number
-        reviewDecision
         state
         url
         assignees {
@@ -44,92 +63,175 @@ graphql_query = '''
           ... on User {
             email
             login
+            id
+            name
           }
         }
-        commits {
+        commits(first: %s) {
           totalCount
+          nodes {
+            commit {
+              id
+              message
+              url
+              treeUrl
+              author {
+                user {
+                  email
+                  login
+                  name
+                  id
+                }
+              }
+            }
+            url
+          }
         }
         permalink
+        reviews(first: %s) {
+          totalCount
+          nodes {
+            author {
+              ... on Bot {
+                id
+                login
+              }
+              ... on User {
+                id
+                email
+                login
+                name
+              }
+            }
+          }
+        }
+        reviewRequests(first: %s) {
+          totalCount
+          nodes {
+            requestedReviewer {
+              ... on Bot {
+                id
+                login
+              }
+              ... on User {
+                email
+                login
+                id
+                name
+              }
+            }
+          }
+        }
+        reviewThreads(first: %s) {
+          totalCount
+          nodes {
+            comments {
+              totalCount
+            }
+          }
+        }
+        mergedBy {
+          ... on Bot {
+            id
+            login
+          }
+          ... on User {
+            login
+            id
+            name
+          }
+        }
+        title
+        totalCommentsCount
+        updatedAt
+        reviewDecision
       }
       pageInfo {
         hasNextPage
+        startCursor
         endCursor
+        hasPreviousPage
       }
     }
-    pullRequestTemplates {
-      filename
-      body
-    }
+    url
   }
 }
 '''
 
 # Function to fetch and store pull requests
-def fetch_and_store_pull_requests(repo_name, owner):
-    end_cursor = None
-
+def fetch_and_store_pull_requests(repo_name, owner, default_req_size1 = 100, req_size2 = 100, end_cursor = None, index = 0, reduce_size = 30):
+    req_size1 = default_req_size1
     while True:
-        after_param = ', after: "%s"' % end_cursor if end_cursor else ''
-        print(f"Making request for {owner}/{repo_name} with after param: {after_param}")
+        LOGGER.info(f"Index: {index}")
+        after_param_str = f', after: "{end_cursor}"' if end_cursor else ''
+        LOGGER.info(f"Making request for {owner}/{repo_name} with after param: {after_param_str} and $first: {req_size1}")
+        
+        query = graphql_query % (repo_name, owner, req_size1, after_param_str, 
+                                 req_size2, req_size2, req_size2, req_size2, req_size2)
+        
         response = requests.post(
             'https://api.github.com/graphql',
-            json={'query': graphql_query % (repo_name, owner, after_param)},
-            headers={'Authorization': "bearer " + github_access_token}
+            json={'query': query},
+            headers={'Authorization': f"bearer {github_access_token}"}
         )
 
         data = response.json()
         if 'errors' in data:
-            print(f"Error for repository {repo_name} owned by {owner}: {data['errors']}")
-            break
+            LOGGER.error(f"Error for repository {repo_name} owned by {owner}: {data['errors']}")
+            req_size1 -= reduce_size
+            if req_size1 <= 0:
+                LOGGER.info(f"Reached minimum req_size1, exiting.")
+                break
+            LOGGER.info(f"Changed req_size1 to = {req_size1}")
+            
+        elif 'documentation_url' in data and 'Retry-After' in response.headers:
+            LOGGER.error(f"Reached limit, retry after {response.headers['Retry-After']} seconds.")
+            time.sleep(int(response.headers['Retry-After']))
+        else:
+            req_size1 = default_req_size1
+            
+            repository_data = data['data']['repository']
+            pull_requests = repository_data['pullRequests']
+            LOGGER.info(f"Total records: {repository_data['pullRequests']['totalCount']}")
+            nodes = pull_requests['nodes']
 
-        repository_data = data['data']['repository']
-        pull_requests = repository_data['pullRequests']
-        nodes = pull_requests['nodes' ]
+            for node in nodes:
+              node['repository'] = f'{owner}/{repo_name}'
 
-        new_nodes = []
-        for node in nodes:
-          existing_pull_request = PullRequestsWrapper.get(node['id'])
-          if existing_pull_request is None:
-                # Pull request doesn't exist in the database, so insert it
-                # Add the repository name to each node before inserting
-                node['repository'] = f'{owner}/{repo_name}'
-                new_nodes.append(node)
-          else:
-            print("Redundant batch.")
-            break
-                
-        print(f"{len(new_nodes)} new records.")
-        # Store the retrieved pull requests in MongoDB
-        if new_nodes:
-          print(f"Saving {len(new_nodes)} for {owner}/{repo_name}")
-          PullRequestsWrapper.save_many(new_nodes)
-
-        # Check if there are more pages
-        if not pull_requests['pageInfo']['hasNextPage']:
-            break
-
-        end_cursor = pull_requests['pageInfo']['endCursor']
-
-
+            LOGGER.info(f"Saving {len(nodes)} for {owner}/{repo_name}")
+            PullRequestWrapper.save_many(nodes)
+            index += len(nodes)
+            
+            # Check if there are more pages
+            if not pull_requests['pageInfo']['hasNextPage']:
+              LOGGER.info(f"Has next page: {pull_requests['pageInfo']['hasNextPage']}")
+              break
+            LOGGER.info(f"Has next page: {pull_requests['pageInfo']['hasNextPage']}")
+            
+            end_cursor = pull_requests['pageInfo']['endCursor']
+            
+    if (index + len(nodes)) < repository_data['pullRequests']['totalCount']:
+        LOGGER.error(f"Check {repo_handle} records. Haven't reached the total count.")
+    else:
+        LOGGER.info(f"=== DONE FETCHING {repo_handle} RECORDS. ===")
 
 repositories = RepositoryWrapper.read()
-skip_list = ['dropwizard/dropwizard', 'movingblocks/terasology', 'jsqlparser/jsqlparser', 'rajawali/rajawali',
-             'fluentlenium/fluentlenium', 'stripe/stripe-java', 'zxing/zxing', 'alibaba/fastjson', 'alibaba/druid',
-             'fasterxml/jackson-core', 'togglz/togglz', 'pgjdbc/pgjdbc', 'oshi/oshi', 'find-sec-bugs/find-sec-bugs',
-             'pmd/pmd', 'zeromq/jeromq', 'anysoftkeyboard/anysoftkeyboard']
-# error while fetching opentripplanner/opentripplanner
+
+skip_list = []
 
 # Loop through repositories and fetch pull requests
 for repo in repositories:
     repo_handle = repo.name
     
     if repo_handle in skip_list:
-      print(f"{repo_handle} is skipped.")
-      continue
-    
+        LOGGER.info(f"=== SKIP {repo_handle} ===")
+        continue
     repo_name = repo_handle.split('/')[1]
     owner = repo_handle.split('/')[0]
 
-    print(f"Fetching pull requests for repository {repo_name} owned by {owner}")
-    fetch_and_store_pull_requests(repo_name, owner)
-
+    if repo_handle == "":
+        fetch_and_store_pull_requests(repo_name=repo_name, owner=owner, default_req_size1=50, 
+                                      end_cursor= "", index=0, reduce_size=5)
+    else:
+        LOGGER.info(f"=== Start fetching pull requests for: {repo_handle} ===")
+        fetch_and_store_pull_requests(repo_name=repo_name, owner=owner, default_req_size1=50, reduce_size=5)
