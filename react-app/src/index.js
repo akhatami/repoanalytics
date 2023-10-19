@@ -1,22 +1,15 @@
 import React from 'react';
-import {Route, BrowserRouter, Routes} from 'react-router-dom';
 import "./App.css";
-
-import Home from './components/Home';
-import Repository from "./components/Repository";
+import 'bootstrap/dist/css/bootstrap.css';
+import 'admin-lte/dist/css/adminlte.css';
+import 'admin-lte/dist/js/adminlte.js';
 import {createRoot} from "react-dom/client";
+import App from "./App";
 
 const root = createRoot(document.getElementById("root"));
 
 root.render(
-    <div className='container'>
         <React.StrictMode>
-        <BrowserRouter>
-            <Routes>
-                <Route exact path="/" element= {<Home/>} />
-                <Route path="/:user/:repo_name" element= {<Repository/>} />
-            </Routes>
-        </BrowserRouter>
+            <App/>
         </React.StrictMode>
-    </div>
 );

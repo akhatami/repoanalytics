@@ -3,12 +3,11 @@ import {useParams} from 'react-router-dom';
 import axios from 'axios';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-// import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import CodecovCard from "./CodecovCard";
 import CoverallsCard from "./CoverallsCard";
-import ResponsiveAppBar from "./ResponsiveAppBar";
 import PullRequestCard from "./PullRequestCard";
+import Breadcrumbs from "./Breadcrumbs";
 
 function Repository() {
     const { user, repo_name } = useParams();
@@ -38,10 +37,26 @@ function Repository() {
 
     }, [user, repo_name]);
 
+    const breadcrumbItems = [
+        { label: 'Home', link: '/' },
+        { label: 'Repositories', link: '/repositories' },
+        { label: `Repo: ${repo_name}`, link: '' },
+    ];
+
     return (
-        <>
-            <ResponsiveAppBar/>
-            {/*<Button variant="outlined" href="/">Other Repositories</Button>*/}
+        <div className="content-wrapper">
+            <section className="content-header">
+                <div className="container-fluid">
+                    <div className="row">
+                        <div className="col-sm-6">
+                            <h3 className="mb-0">
+                                {user}/{repo_name}
+                            </h3>
+                        </div>
+                        <Breadcrumbs items={breadcrumbItems} />
+                    </div>
+                </div>
+            </section>
             {repo ? (
                 repo[0] !== 'NOT FOUND' ? (
                     <Card>
@@ -69,7 +84,7 @@ function Repository() {
             <CoverallsCard
                 repo_handle={user+'/'+repo_name}
             />
-        </>
+        </div>
     );
 }
 
