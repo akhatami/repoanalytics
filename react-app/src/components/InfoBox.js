@@ -21,7 +21,7 @@ function InfoBox({ colSize = '3', color = 'green', iconClass = 'fa-code', text =
                         <span className="info-box-number">{number}</span>
                     ) : null}
                     {content !== null && content !== undefined ? (
-                        <span className="info-box-content">{content}</span>
+                        <span className="info-box-content small">{content}</span>
                     ) : null}
                 </div>
             </div>

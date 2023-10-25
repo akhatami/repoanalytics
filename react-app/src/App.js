@@ -31,9 +31,10 @@ function App() {
             {/* MainHeader */}
             <Header />
             {/* Sidebar */}
+            <Router>
             <SideBar />
             {/* Content Wrapper */}
-            <Router>
+
                 <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/home" element={<Home />}  />

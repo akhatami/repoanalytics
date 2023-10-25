@@ -40,7 +40,7 @@ export const options = {
 function CoverallsCard({ repo_handle }){
     const [chartData, setChartData] = useState(null);
     useEffect(() => {
-        async function fetchCodecovDetails() {
+        async function fetchCoverallsDetails() {
             try {
                 const response = await axios.get(`/api/coveralls/${repo_handle}`);
                 return response.data;
@@ -50,7 +50,7 @@ function CoverallsCard({ repo_handle }){
             }
         }
 
-        fetchCodecovDetails()
+        fetchCoverallsDetails()
             .then((data) => {
                 if (!data) {
                     setChartData(null);
@@ -68,9 +68,9 @@ function CoverallsCard({ repo_handle }){
                         datasetData.push(coverage.covered_percent);
                     }
 
-                    // if (labels.length > 50){
-                    //     labels = labels.slice(50);
-                    //     datasetData = datasetData.slice(50);
+                    // if (labels.length > 10){
+                    //     labels = labels.slice(10);
+                    //     datasetData = datasetData.slice(10);
                     // }
 
                     setChartData({

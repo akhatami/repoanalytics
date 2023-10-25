@@ -21,7 +21,6 @@ function PullRequestCommitPopup({ isOpen, onClose, pullId, repo_handle }) {
 
         fetchData()
             .then((data) => {
-                console.log('Fetch data completed:', data);
                 if (!data) {
                     setJsonData(null);
                 } else{

@@ -26,6 +26,27 @@ router.get('/repositories', async (req, res) => {
     res.json({repositories, repositoriesTotal});
 });
 
+router.get('/repositoriesCount', async (req, res) => {
+
+    const repositoriesTotal = await Repository.countDocuments();
+
+    res.json({repositoriesTotal});
+});
+
+const { subDays } = require('date-fns');
+
+router.get('/recentRepositoriesCount', async (req, res) => {
+    const thirtyDaysAgo = subDays(new Date(), 45);
+
+    const count = await RepositoryDetails.countDocuments({
+        updatedAt: {
+            $gte: thirtyDaysAgo.toISOString()
+        }
+    });
+
+    res.json({count});
+});
+
 router.get('/repo/:user/:repo_name', async (req, res) => {
     const user = req.params.user;
     const repo_name = req.params.repo_name;

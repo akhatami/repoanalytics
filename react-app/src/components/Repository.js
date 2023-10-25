@@ -1,13 +1,14 @@
 import React, {useEffect, useState} from 'react';
 import {useParams} from 'react-router-dom';
 import axios from 'axios';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import CodecovCard from "./CodecovCard";
 import CoverallsCard from "./CoverallsCard";
 import PullRequestCard from "./PullRequestCard";
 import Breadcrumbs from "./Breadcrumbs";
+import InfoBox from "./InfoBox";
+import CoverallsCoverage from "./CoverallsCoverage";
+import CodecovCoverage from "./CodecovCoverage";
 
 function Repository() {
     const { user, repo_name } = useParams();
@@ -16,7 +17,8 @@ function Repository() {
     useEffect(() => {
         async function fetchRepoDetails() {
             try {
-                return await axios.get(`/api/repo/${user}/${repo_name}`);
+                const response = await axios.get(`/api/repo/${user}/${repo_name}`);
+                return response;
             } catch (error) {
                 console.error('Error fetching repo details:', error);
                 return null;
@@ -35,6 +37,8 @@ function Repository() {
                 setRepo([]); // set empty state on error
             });
 
+        // console.log(repo['has_coveralls']);
+
     }, [user, repo_name]);
 
     const breadcrumbItems = [
@@ -48,33 +52,32 @@ function Repository() {
             <section className="content-header">
                 <div className="container-fluid">
                     <div className="row">
-                        <div className="col-sm-6">
-                            <h3 className="mb-0">
-                                {user}/{repo_name}
-                            </h3>
-                        </div>
-                        <Breadcrumbs items={breadcrumbItems} />
-                    </div>
-                </div>
-            </section>
+
             {repo ? (
                 repo[0] !== 'NOT FOUND' ? (
-                    <Card>
-                        <CardContent>
-                            <Typography variant={"h5"}>Name: {repo.name}</Typography>
-                            <Typography>Language: {repo.language}</Typography>
-                            <Typography>Default Branch: {repo.default_branch}</Typography>
-                            <Typography>Has Codecov: {repo.has_codecov ? 'Yes' : 'No'}</Typography>
-                            <Typography>Has Coveralls: {repo.has_coveralls ? 'Yes' : 'No'}</Typography>
-                            <Typography>Has Codeclimate: {repo.has_codeclimate ? 'Yes' : 'No'}</Typography>
-                        </CardContent>
-                    </Card>
+                        <div className="col-sm-6">
+                            <h3 className="mb-0">{user}/{repo_name}</h3>
+                        </div>
+
                 ) : (
                     <Typography>Repo not found.</Typography> // improve later: 404 page
                 )
             ) : (
                 <Typography>Loading...</Typography> // improve later: better UI/UX
             )}
+                        <Breadcrumbs items={breadcrumbItems} />
+                    </div>
+                </div>
+            </section>
+            <section className="content">
+            <div className="row">
+                <CoverallsCoverage repo_handle={user+'/'+repo_name} />
+                <CodecovCoverage repo_handle={user+'/'+repo_name} />
+                <InfoBox colSize="3" color="white" iconClass="fa-code-branch" text="PR Statuses" number={1} />
+                <InfoBox colSize="3" color="white" iconClass="fa-eye" text="PR avg time" number={"X"} />
+                <InfoBox colSize="3" color="white" iconClass="fa-user" text="Guidelines" number={"X"} />
+            </div>
+
             <PullRequestCard
                 repo_handle={user+'/'+repo_name}
             />
@@ -84,6 +87,7 @@ function Repository() {
             <CoverallsCard
                 repo_handle={user+'/'+repo_name}
             />
+            </section>
         </div>
     );
 }
