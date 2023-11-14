@@ -67,7 +67,8 @@ function CoverallsCard({ repo_handle }){
                         labels.push(dateString);
                         datasetData.push(coverage.covered_percent);
                     }
-
+                    datasetData.reverse();
+                    labels.reverse();
                     // if (labels.length > 10){
                     //     labels = labels.slice(10);
                     //     datasetData = datasetData.slice(10);

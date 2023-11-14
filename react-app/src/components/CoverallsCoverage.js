@@ -2,8 +2,15 @@ import React, {useEffect, useState} from 'react';
 import InfoBox from "./InfoBox";
 import axios from "axios";
 
+function calcStats(data){
+    let coverageChange = data[0]['covered_percent'] - data[data.length - 1]['covered_percent'];
+    coverageChange = coverageChange.toFixed(2);
+    return {coverageChange};
+}
 function CoverallsCoverage({ repo_handle }){
     const [coverageData, setCoverageData] = useState(null);
+    const [stats, setStats] = useState(null);
+
     useEffect(() => {
         async function fetchCoverallsDetails() {
             try {
@@ -28,39 +35,51 @@ function CoverallsCoverage({ repo_handle }){
             });
 
     }, [repo_handle]);
+
+    useEffect(() => {
+        if (coverageData) {
+            const calculatedStats = calcStats(coverageData);
+            setStats(calculatedStats);
+        }
+    }, [coverageData]);
+
+    function formatReadableDate(dateString) {
+        const date = new Date(dateString);
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        return date.toLocaleDateString(undefined, options);
+    }
+
     return(
         <>
-        {coverageData ? (
+        {coverageData && stats ? (
                 coverageData[0] !== 'NOT FOUND' ? (
+                    <>
                     <InfoBox colSize="3" color="white" iconClass="fa-code" text="Code Coverage (Coveralls)"
-                             number={parseFloat(coverageData[coverageData.length - 1]['covered_percent'].toFixed(2))} />
+                             number={parseFloat(coverageData[0]['covered_percent'].toFixed(1))} />
+                    <div className={`col-lg-4 info-box-container`}>
+                        <div className="info-box">
+                            <span className="info-box-icon bg-info"><i className="fas fa-code"></i></span>
+                            <div className="info-box-content">
+                                <span className="info-box-text">
+                                    Coverage change from {formatReadableDate(coverageData[coverageData.length - 1]['created_at'])} to {formatReadableDate(coverageData[0]['created_at'])}
+                                </span>
+                                <span className="info-box-number">Branch: {coverageData[0]['branch'] ? coverageData[0]['branch'] : 'N/A'}</span>
+                                <div className="progress">
+                                    <div className="progress-bar bg-info" style={{ width: `${stats.coverageChange}%` }}></div>
+                                </div>
+                                <span className="progress-description">{stats.coverageChange}% change</span>
+                            </div>
+                        </div>
+                    </div>
+                    </>
                 ) : (
                     <InfoBox colSize="3" color="white" iconClass="fa-code" text="Code Coverage (Coveralls)" number="Not Found"/>
                 )
             ) : (
             <InfoBox colSize="3" color="white" iconClass="fa-code" text="Code Coverage (Coveralls)" number="Loading"/>
             )}
-        </>
-        //
 
-        // <div className={`col-lg-${3} info-box-container`}>
-        //     <div className={`info-box bg-gradient-white`}>
-        // <span className="info-box-icon">
-        //     <i className="fas fa-code"></i>
-        // </span>
-        //         <div className="info-box-content">
-        //             <span className="info-box-text">Code Coverage</span>
-        //                 <span className="info-box-number">{parseFloat(coverageData[coverageData.length - 1]['covered_percent'].toFixed(2))}</span>
-        //                 {/*<img src={coverageData[coverageData.length - 1]['badge_url']} alt="Badge" />*/}
-        //             {/*<ul>*/}
-        //             {/*    <li><strong>Branch:</strong> {coverageData[coverageData.length - 1]['branch']}</li>*/}
-        //             {/*    <li><strong>Commit SHA:</strong> {coverageData[coverageData.length - 1]['commit_sha']}</li>*/}
-        //             {/*    <li><strong>Covered Percent:</strong> {coverageData[coverageData.length - 1]['covered_percent']}%</li>*/}
-        //             {/*    <li><strong>Created At:</strong> {coverageData[coverageData.length - 1]['created_at']}</li>*/}
-        //             {/*</ul>*/}
-        //         </div>
-        //     </div>
-        // </div>
+        </>
     );
 }
 

@@ -49,27 +49,23 @@ const PullRequestCard = ({ repo_handle }) => {
     }, [repo_handle]);
 
     return (
-        <Card>
-            <CardContent>
-                <Typography variant="h5" component="div">
-                    Pull Requests for {repo_handle}
-                </Typography>
-                {loading ? (
-                    <p>Loading...</p>
-                ) : (
-                    <PullRequestTable
-                        data={jsonData}
-                        handleCommitDetailsClick={handleCommitDetailsClick}
-                    />
-                )}
-            </CardContent>
-            <PullRequestCommitPopup
-                isOpen={isCommitDetailsOpen}
-                onClose={handleCloseCommitDetails}
-                pullId={selectedPullId}
-                repo_handle={repo_handle}
-            />
-        </Card>
+        <div className="col-md-12">
+            <div className="card">
+                <div className="card-header">
+                    <h3 className="card-title">PR details</h3>
+                </div>
+                <div className="card-body">
+                    {loading ? (
+                        <p>Loading...</p>
+                    ) : (
+                        <PullRequestTable
+                            data={jsonData}
+                            handleCommitDetailsClick={handleCommitDetailsClick}
+                        />
+                    )}
+                </div>
+            </div>
+        </div>
     );
 };
 

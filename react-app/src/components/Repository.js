@@ -6,9 +6,10 @@ import CodecovCard from "./CodecovCard";
 import CoverallsCard from "./CoverallsCard";
 import PullRequestCard from "./PullRequestCard";
 import Breadcrumbs from "./Breadcrumbs";
-import InfoBox from "./InfoBox";
-import CoverallsCoverage from "./CoverallsCoverage";
-import CodecovCoverage from "./CodecovCoverage";
+import StatusCheckRuns from "./StatusCheckRuns";
+import TestingStats from "./TestingStats";
+import PullRequestStats from "./PullRequestStats";
+import GuidelinesStats from "./GuidelinesStats";
 
 function Repository() {
     const { user, repo_name } = useParams();
@@ -25,19 +26,18 @@ function Repository() {
             }
         }
 
+
         fetchRepoDetails()
             .then(response => {
                 if(!response){
                     setRepo(null);
                 }
                 setRepo(response.data);
-        })
+            })
             .catch(error => {
                 console.error(error);
                 setRepo([]); // set empty state on error
             });
-
-        // console.log(repo['has_coveralls']);
 
     }, [user, repo_name]);
 
@@ -56,7 +56,12 @@ function Repository() {
             {repo ? (
                 repo[0] !== 'NOT FOUND' ? (
                         <div className="col-sm-6">
-                            <h3 className="mb-0">{user}/{repo_name}</h3>
+                            <h3 className="mb-0">
+                                <span style={{ marginRight: '8px' }}>{user}/{repo_name}</span>
+                                <a href={`https://github.com/${user}/${repo_name}`} target="_blank" rel="noopener noreferrer">
+                                    <i className="fab fa-github"></i>
+                                </a>
+                            </h3>
                         </div>
 
                 ) : (
@@ -69,18 +74,23 @@ function Repository() {
                     </div>
                 </div>
             </section>
+            <div className="border-bottom mb-3"></div>
             <section className="content">
-            <div className="row">
-                <CoverallsCoverage repo_handle={user+'/'+repo_name} />
-                <CodecovCoverage repo_handle={user+'/'+repo_name} />
-                <InfoBox colSize="3" color="white" iconClass="fa-code-branch" text="PR Statuses" number={1} />
-                <InfoBox colSize="3" color="white" iconClass="fa-eye" text="PR avg time" number={"X"} />
-                <InfoBox colSize="3" color="white" iconClass="fa-user" text="Guidelines" number={"X"} />
-            </div>
+                <div className="row">
+                    <TestingStats repo_handle={user+'/'+repo_name}/>
+                </div>
 
-            <PullRequestCard
-                repo_handle={user+'/'+repo_name}
-            />
+                <div className="row">
+                    <StatusCheckRuns repo_handle={user+'/'+repo_name} />
+                </div>
+
+                <div className="row">
+                    <PullRequestStats repo_handle={user+'/'+repo_name} />
+                </div>
+                <div className="border-bottom mb-3"></div>
+                <div className="row">
+                    <GuidelinesStats repo_handle={user+'/'+repo_name} />
+                </div>
             <CodecovCard
                 repo_handle={user+'/'+repo_name}
             />

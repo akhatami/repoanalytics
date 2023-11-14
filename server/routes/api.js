@@ -89,7 +89,7 @@ router.get('/codecov/:user/:repo_name', async (req, res) => {
     const name = user + '/' + repo_name;
     let data;
     try {
-        data = await Codecov.find({'repo_name': name});
+        data = await Codecov.find({'repo_name': name}).sort({'timestamp': -1}).limit(50);
     } catch (error) {
         console.error('Error fetching Codecov details:', error);
         data = [];
@@ -122,7 +122,7 @@ router.get('/coveralls/:user/:repo_name', async (req, res) => {
     try {
         data = await Coveralls.find({'repo_name': { $regex: new RegExp("^" + name.toLowerCase(), "i") },
             'branch': { $regex: new RegExp("^" + default_branch.toLowerCase(), "i") }})
-            .sort({'created_at': 1});
+            .sort({'created_at': -1}).limit(50);
     } catch (error) {
         console.error('Error fetching Codecov details:', error);
         return;
@@ -141,25 +141,7 @@ router.get('/pulls/:user/:repo_name', async (req, res) => {
     const name = user + '/' + repo_name;
     let data;
     try {
-        data = await PullRequest.find({'repository': name}).sort({'createdAt': -1});
-    } catch (error) {
-        console.error('Error fetching repo details:', error);
-        data = [{}];
-    }
-    if (Object.keys(data).length === 0){
-        res.json(['NOT FOUND']);
-    } else {
-        res.json(data);
-    }
-});
-
-router.get('/pulls/:user/:repo_name', async (req, res) => {
-    const user = req.params.user;
-    const repo_name = req.params.repo_name;
-    const name = user + '/' + repo_name;
-    let data;
-    try {
-        data = await PullRequest.find({'repository': name}).sort({'createdAt': -1});
+        data = await PullRequest.find({'repository': name}).sort({'createdAt': -1}).limit(100);
     } catch (error) {
         console.error('Error fetching repo details:', error);
         data = [{}];
@@ -181,7 +163,42 @@ router.get('/statusChecks/:user/:repo_name/:pull_number', async (req, res) => {
     let data;
     try {
         data = await CommitStatusCheck.find({'repository': name, 'pull_request_number': pull_number});
-        console.log(data);
+    } catch (error) {
+        console.error('Error fetching status check details:', error);
+        data = [{}];
+    }
+    if (Object.keys(data).length === 0){
+        res.json(['NOT FOUND']);
+    } else {
+        res.json(data);
+    }
+});
+
+router.get('/statusChecksMultiple/:user/:repo_name/:limit', async (req, res) => {
+    const user = req.params.user;
+    const repo_name = req.params.repo_name;
+    const limit = req.params.limit;
+
+    const name = user + '/' + repo_name;
+    console.log(limit, user, repo_name);
+    let data;
+    try {
+        // Step 1: Retrieve the latest 100 PR numbers
+        const latestPRs = await CommitStatusCheck.aggregate([
+            { $match: { repository: name } },
+            { $group: { _id: '$pull_request_number' } },
+            { $sort: { _id: -1 } },
+            { $limit: parseInt(limit) },
+        ]);
+
+        // Extract PR numbers from the aggregation result
+        const prNumbers = latestPRs.map(pr => pr._id);
+
+        // Step 2: Retrieve status checks for the latest 100 PRs
+        data = await CommitStatusCheck.find({
+            'repository': name,
+            'pull_request_number': { $in: prNumbers }
+        });
     } catch (error) {
         console.error('Error fetching status check details:', error);
         data = [{}];
