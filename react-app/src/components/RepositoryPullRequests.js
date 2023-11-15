@@ -4,8 +4,9 @@ import axios from "axios";
 import Typography from "@mui/material/Typography";
 import Breadcrumbs from "./Breadcrumbs";
 import PullRequestStatsMore from "./PullRequestStatsMore";
-import PullRequestStats from "./PullRequestStats";
 import PullRequestCard from "./PullRequestCard";
+import NotFound from "./NotFound";
+import Loading from "./Loading";
 
 function RepositoryPullRequests() {
     const { user, repo_name } = useParams();
@@ -45,42 +46,53 @@ function RepositoryPullRequests() {
     ];
 
     return (
-        <div className="content-wrapper">
-            <section className="content-header">
-                <div className="container-fluid">
-                    <div className="row">
-
-                        {repo ? (
-                            repo[0] !== 'NOT FOUND' ? (
-                                <div className="col-sm-6">
-                                    <h3 className="mb-0">
-                                        <span style={{ marginRight: '8px' }}>{user}/{repo_name}</span>
-                                        <a href={`https://github.com/${user}/${repo_name}`} target="_blank" rel="noopener noreferrer">
-                                            <i className="fab fa-github"></i>
-                                        </a>
-                                    </h3>
+            <>
+                {repo ? (repo[0] !== 'NOT FOUND' ? (
+                                <div className="content-wrapper">
+                                    <section className="content-header">
+                                        <div className="container-fluid">
+                                            <div className="row">
+                                                <div className="col-sm-6">
+                                                    <h3 className="mb-0">
+                                                        <span style={{ marginRight: '8px' }}>{user}/{repo_name}</span>
+                                                        <a href={`https://github.com/${user}/${repo_name}`} target="_blank" rel="noopener noreferrer">
+                                                            <i className="fab fa-github"></i>
+                                                        </a>
+                                                    </h3>
+                                                </div>
+                                                <Breadcrumbs items={breadcrumbItems} />
+                                            </div>
+                                        </div>
+                                    </section>
+                                    <div className="border-bottom mb-3"></div>
+                                    <section className="content">
+                                        <div className="row">
+                                            <PullRequestStatsMore repo_handle={user+'/'+repo_name} />
+                                        </div>
+                                        <div className="row">
+                                            <PullRequestCard repo_handle={user+'/'+repo_name}/>
+                                        </div>
+                                    </section>
                                 </div>
-
                             ) : (
-                                <Typography>Repo not found.</Typography> // improve later: 404 page
+                                <div className="content-wrapper">
+                                    <section className="content-header">
+                                        <div className="container-fluid">
+                                            <NotFound />
+                                        </div>
+                                    </section>
+                                </div>
                             )
                         ) : (
-                            <Typography>Loading...</Typography> // improve later: better UI/UX
+                            <div className="content-wrapper">
+                                <section className="content-header">
+                                    <div className="container-fluid">
+                                        <Loading />
+                                    </div>
+                                </section>
+                            </div>
                         )}
-                        <Breadcrumbs items={breadcrumbItems} />
-                    </div>
-                </div>
-            </section>
-            <div className="border-bottom mb-3"></div>
-            <section className="content">
-                <div className="row">
-                    <PullRequestStatsMore repo_handle={user+'/'+repo_name} />
-                </div>
-                <div className="row">
-                    <PullRequestCard repo_handle={user+'/'+repo_name}/>
-                </div>
-            </section>
-        </div>
+            </>
     );
 }
 

@@ -1,16 +1,16 @@
 import React from 'react';
 
-function InfoBox({ colSize = '3', color = 'green', iconClass, text = 'Text', number, content, path }) {
+function InfoBox({ colSize = '3', color = 'green', iconClass, text = 'Text', number, content, link }) {
     if (number !== undefined){
         number =String(number)
     }
     const infoBoxStyle = {
-        cursor: path ? 'pointer' : 'auto', // Change cursor to pointer if a path is provided
+        cursor: link ? 'pointer' : 'auto', // Change cursor to pointer if a path is provided
     };
 
     const handleClick = () => {
-        if (path) {
-            window.location.href = path; // Redirect to the specified path
+        if (link) {
+            window.open(link, '_blank');
         }
     };
 
@@ -27,6 +27,11 @@ function InfoBox({ colSize = '3', color = 'green', iconClass, text = 'Text', num
                     ) : null}
                     {content !== null && content !== undefined ? (
                         <span className="info-box-text">{content}</span>
+                    ) : null}
+                    {link ? (
+                        <a href={link} target="_blank" rel="noopener noreferrer">
+                            {link}
+                        </a>
                     ) : null}
                 </div>
             </div>

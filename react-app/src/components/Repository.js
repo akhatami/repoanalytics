@@ -1,15 +1,15 @@
 import React, {useEffect, useState} from 'react';
 import {useParams} from 'react-router-dom';
 import axios from 'axios';
-import Typography from '@mui/material/Typography';
 import CodecovCard from "./CodecovCard";
 import CoverallsCard from "./CoverallsCard";
-import PullRequestCard from "./PullRequestCard";
 import Breadcrumbs from "./Breadcrumbs";
 import StatusCheckRuns from "./StatusCheckRuns";
 import TestingStats from "./TestingStats";
 import PullRequestStats from "./PullRequestStats";
 import GuidelinesStats from "./GuidelinesStats";
+import NotFound from "./NotFound";
+import Loading from "./Loading";
 
 function Repository() {
     const { user, repo_name } = useParams();
@@ -48,57 +48,61 @@ function Repository() {
     ];
 
     return (
-        <div className="content-wrapper">
-            <section className="content-header">
-                <div className="container-fluid">
-                    <div className="row">
-
-            {repo ? (
-                repo[0] !== 'NOT FOUND' ? (
-                        <div className="col-sm-6">
-                            <h3 className="mb-0">
-                                <span style={{ marginRight: '8px' }}>{user}/{repo_name}</span>
-                                <a href={`https://github.com/${user}/${repo_name}`} target="_blank" rel="noopener noreferrer">
-                                    <i className="fab fa-github"></i>
-                                </a>
-                            </h3>
+            <>
+                {repo ? (
+                    repo[0] !== 'NOT FOUND' ? (
+                        <div className="content-wrapper">
+                            <section className="content-header">
+                                <div className="container-fluid">
+                                    <div className="row">
+                                        <div className="col-sm-6">
+                                            <h3 className="mb-0">
+                                                <span style={{ marginRight: '8px' }}>{user}/{repo_name}</span>
+                                                <a href={`https://github.com/${user}/${repo_name}`} target="_blank" rel="noopener noreferrer">
+                                                    <i className="fab fa-github"></i>
+                                                </a>
+                                            </h3>
+                                        </div>
+                                        <Breadcrumbs items={breadcrumbItems} />
+                                    </div>
+                                    <div className="border-bottom mb-3"></div>
+                                    <section className="content">
+                                        <div className="row">
+                                            <TestingStats repo_handle={user+'/'+repo_name}/>
+                                        </div>
+                                        <div className="row">
+                                            <StatusCheckRuns repo_handle={user+'/'+repo_name} />
+                                        </div>
+                                        <div className="row">
+                                            <PullRequestStats repo_handle={user+'/'+repo_name} />
+                                        </div>
+                                        <div className="row">
+                                            <GuidelinesStats repo_handle={user+'/'+repo_name} />
+                                        </div>
+                                    </section>
+                                </div>
+                            </section>
                         </div>
-
+                    ) : (
+                        <div className="content-wrapper">
+                            <section className="content-header">
+                                <div className="container-fluid">
+                                    <NotFound />
+                                </div>
+                            </section>
+                        </div>
+                    )
                 ) : (
-                    <Typography>Repo not found.</Typography> // improve later: 404 page
-                )
-            ) : (
-                <Typography>Loading...</Typography> // improve later: better UI/UX
-            )}
-                        <Breadcrumbs items={breadcrumbItems} />
+                    <div className="content-wrapper">
+                        <section className="content-header">
+                            <div className="container-fluid">
+                                <Loading />
+                            </div>
+                        </section>
                     </div>
-                </div>
-            </section>
-            <div className="border-bottom mb-3"></div>
-            <section className="content">
-                <div className="row">
-                    <TestingStats repo_handle={user+'/'+repo_name}/>
-                </div>
+                )}
 
-                <div className="row">
-                    <StatusCheckRuns repo_handle={user+'/'+repo_name} />
-                </div>
-
-                <div className="row">
-                    <PullRequestStats repo_handle={user+'/'+repo_name} />
-                </div>
-                <div className="border-bottom mb-3"></div>
-                <div className="row">
-                    <GuidelinesStats repo_handle={user+'/'+repo_name} />
-                </div>
-            <CodecovCard
-                repo_handle={user+'/'+repo_name}
-            />
-            <CoverallsCard
-                repo_handle={user+'/'+repo_name}
-            />
-            </section>
-        </div>
+            </>
     );
 }
 

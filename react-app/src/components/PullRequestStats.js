@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from 'react';
 import axios from "axios";
 import InfoBox from "./InfoBox";
-import { calculateAverages, calculateDistribution, calculateTotalParticipants, getTopContributors } from '../helpers/statistics';
-import { createDoughnutChart, createBarChart } from '../helpers/chartUtils';
+import { calculateAverages, calculateTotalParticipants } from '../helpers/statistics';
+import Loading from "./Loading";
 
 function calcStats(data){
     const totalPRs = data.length;
@@ -80,7 +80,7 @@ function PullRequestStats({ repo_handle }){
             <h4 className="mb-3">Pull Requests Stats <span className="small">over the last 100 PRs</span></h4>
         </div>
             {loading ? (
-                <p>Loading...</p>
+                <Loading />
             ) : (
                 <>
                     <InfoBox colSize="3" color="white" iconClass="fa-plus" text="Average Additions per PR (line)"

@@ -11,6 +11,7 @@ import Contact from "./components/Contact";
 import Request from "./components/Request";
 import Repository from "./components/Repository";
 import RepositoryPullRequests from "./components/RepositoryPullRequests";
+import RepositoryTesting from "./components/RepositoryTesting";
 
 // const getInitialState = () => {
 //     const storedData = sessionStorage.getItem('isToggleOpen');
@@ -46,6 +47,7 @@ function App() {
                     <Route path="/request" element={<Request />}  />
                     <Route path="/:user/:repo_name" element={<Repository />} />
                     <Route path="/:user/:repo_name/pulls" element={<RepositoryPullRequests />} />
+                    <Route path="/:user/:repo_name/testing" element={<RepositoryTesting />} />
                 </Routes>
             </Router>
             <Footer/>

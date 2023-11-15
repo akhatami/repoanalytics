@@ -3,7 +3,9 @@ import CoverallsCoverage from "./CoverallsCoverage";
 import CodecovCoverage from "./CodecovCoverage";
 import axios from "axios";
 import InfoBox from "./InfoBox";
-function TestingStats({ repo_handle }) {
+import CodecovCard from "./CodecovCard";
+import CoverallsCard from "./CoverallsCard";
+function TestingStatsMore({ repo_handle }) {
     const [repo, setRepo] = useState(null);
 
     useEffect(() => {
@@ -36,18 +38,32 @@ function TestingStats({ repo_handle }) {
                 <h4 className="mb-3">Testing Stats</h4>
             </div>
             {repo && repo.has_coveralls === 1 ? (
-                <CoverallsCoverage repo_handle={repo_handle} />
+                <>
+                    <CoverallsCoverage repo_handle={repo_handle} />
+                    <div className="row">
+                        <CoverallsCard
+                            repo_handle={repo_handle}
+                        />
+                    </div>
+                </>
             ): ''}
 
             {repo && repo.has_codecov === 1 ? (
-                <CodecovCoverage repo_handle={repo_handle} />
+                <>
+                    <CodecovCoverage repo_handle={repo_handle} />
+                    <div className="row">
+                        <CodecovCard
+                            repo_handle={repo_handle}
+                        />
+                    </div>
+                </>
             ) : ''}
 
             {repo && repo.has_coveralls !== 1 && repo.has_codecov !== 1 ? (
                 <InfoBox colSize="3" color="warning" iconClass="fa-code" text="No Coverage Found"/>
             ) : ''}
-            <InfoBox colSize="3" color="green" iconClass="fa-chart-bar" text="More Stats" path={`/${repo_handle}/testing`} />
+
         </>
     );
 }
-export default TestingStats;
+export default TestingStatsMore;
