@@ -1,16 +1,16 @@
 import React from 'react';
 
-function InfoBox({ colSize = '3', color = 'green', iconClass, text = 'Text', number, content, link }) {
+function InfoBox({ colSize = '3', color = 'green', iconClass, text = 'Text', number, content, link, path }) {
     if (number !== undefined){
         number =String(number)
     }
     const infoBoxStyle = {
-        cursor: link ? 'pointer' : 'auto', // Change cursor to pointer if a path is provided
+        cursor: path ? 'pointer' : 'auto', // Change cursor to pointer if a path is provided
     };
 
     const handleClick = () => {
-        if (link) {
-            window.open(link, '_blank');
+        if (path) {
+            window.open(path, '_blank');
         }
     };
 
