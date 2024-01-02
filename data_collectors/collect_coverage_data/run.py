@@ -66,7 +66,13 @@ def collect_coveralls():
         if len(data) == 0:
             continue 
         CoverallsCoverageWrapper.save_many(data)
+
+def keep_coveralls_main_branch():
+    coverall_repos = RepositoryWrapper.read(query={"has_coveralls": 1})
+    for repo in coverall_repos:
+        CoverallsCoverageWrapper.keep_only_main_branch(repo.name, repo.default_branch)
         
 # add_coverage_tool()
 # collect_codecov()
 # collect_coveralls()
+keep_coveralls_main_branch()

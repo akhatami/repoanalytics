@@ -2,6 +2,7 @@
 Methods to interact with the database
 """
 from typing import List, Dict, Union, Tuple
+import re
 
 # # Package # #
 from data_collectors.models import *
@@ -127,6 +128,13 @@ class CoverallsCoverageWrapper:
         """Retrieve all the available records"""
         cursor = CoverallsCoverageCollection.find()
         return [CoverallsCoverage(**document) for document in cursor]
+    
+    @staticmethod
+    def keep_only_main_branch(repo_name, main_branch_value):
+        """Remove all records for a repository except the specified branch"""
+        regex_repo_name = re.compile(f'^{re.escape(repo_name)}$', re.IGNORECASE)
+        query = {'repo_name': regex_repo_name, 'branch': {'$ne': main_branch_value}}
+        CoverallsCoverageCollection.delete_many(query)
     
 class PullRequestWrapper:
     
