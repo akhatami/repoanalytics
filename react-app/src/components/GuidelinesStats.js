@@ -87,7 +87,7 @@ function GuidelinesStats({ repo_handle }){
                 <h4 className="mb-3">Guidelines Stats</h4>
             </div>
             {loading ? (
-                <Loading/>
+                <Loading containerHeight='15vh'/>
             ) : (
             <>
                 <InfoBox

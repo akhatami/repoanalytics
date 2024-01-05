@@ -7,13 +7,13 @@ import { createDoughnutChart, createBarChart } from '../helpers/chartUtils';
 function calcStats(data){
     const totalPRs = data.length;
 
-    const averageAdditions = calculateAverages(data, 'additions');
-    const averageDeletions = calculateAverages(data, 'deletions');
-    const averageChangedFiles = calculateAverages(data, 'changedFiles');
+    const averageAdditions = calculateAverages(data, 'additions').toFixed(2);
+    const averageDeletions = calculateAverages(data, 'deletions').toFixed(2);
+    const averageChangedFiles = calculateAverages(data, 'changedFiles').toFixed(2);
 
     const authorsDistribution = calculateDistribution(data, 'author');
     const totalParticipants = calculateTotalParticipants(data);
-    const averageParticipants = totalParticipants / totalPRs;
+    const averageParticipants = (totalParticipants / totalPRs).toFixed(2);
 
     const mostActiveAuthors = getTopContributors(authorsDistribution);
 
@@ -22,7 +22,7 @@ function calcStats(data){
 
     // Calculate the average number of comments per PR
     const totalComments = data.reduce((sum, pr) => sum + pr.comments.totalCount, 0);
-    const averageComments = totalComments / totalPRs;
+    const averageComments = (totalComments / totalPRs).toFixed(2);
 
     // Identify PRs with the highest number of comments
     const maxCommentsPRs = data

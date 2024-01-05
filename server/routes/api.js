@@ -83,6 +83,41 @@ router.get('/repo_details/:user/:repo_name', async (req, res) => {
     }
 });
 
+router.get('/repos_coverage', async (req, res) => {
+    try {
+        // Get the latest covered_percent for each repo
+        const latestReposCoveralls = await Coveralls.aggregate([
+            {
+                $sort: { created_at: -1 }, // Sort by created_at in descending order
+            },
+            {
+                $group: {
+                    _id: '$repo_name',
+                    latest_covered_percent: { $first: '$covered_percent' },
+                },
+            },
+        ]);
+        const latestReposCodecov = await Codecov.aggregate([
+            {
+                $sort: { timestamp: -1 },
+            },
+            {
+                $group: {
+                    _id: '$repo_name',
+                    latest_covered_percent: { $first: '$avg' },
+                },
+            },
+        ]);
+
+        // Merge the results from both collections
+        const mergedRepos = [...latestReposCoveralls, ...latestReposCodecov];
+        res.json(mergedRepos);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 router.get('/codecov/:user/:repo_name', async (req, res) => {
     const user = req.params.user;
     const repo_name = req.params.repo_name;
@@ -152,6 +187,47 @@ router.get('/pulls/:user/:repo_name', async (req, res) => {
         res.json(data);
     }
 });
+
+// index is manually added on 'createdAt' field and also 'repository' field
+router.get('/pulls/all', async (req, res) => {
+    try {
+        const targetPullsPerRepository = 100;
+
+        const allData = await PullRequest.find().sort({ 'createdAt': -1 });
+
+        // Group data by repository
+        const groupedData = allData.reduce((acc, entry) => {
+            const repositoryId = entry.repository;
+            if (!acc[repositoryId]) {
+                acc[repositoryId] = { _id: repositoryId, pulls: [] };
+            }
+            acc[repositoryId].pulls.push(entry);
+            return acc;
+        }, {});
+
+        console.log('groupedData', groupedData);
+
+        // Filter the latest 100 pull requests for each repository
+        const filteredData = Object.values(groupedData).map(repository => ({
+            _id: repository._id,
+            pulls: repository.pulls.slice(0, targetPullsPerRepository)
+        }));
+
+        // Log count of repositories in the first level
+        console.log('Repository count:', Object.keys(groupedData).length);
+
+        // Log count of pull requests per repository in the second level
+        console.log('Pull requests per repository count:', filteredData.map(repo => repo.pulls.length));
+
+        res.json(filteredData);
+    } catch (error) {
+        console.error('Error fetching all pull requests:', error);
+        res.json(['NOT FOUND']);
+    }
+});
+
+
+
 
 router.get('/statusChecks/:user/:repo_name/:pull_number', async (req, res) => {
     const user = req.params.user;

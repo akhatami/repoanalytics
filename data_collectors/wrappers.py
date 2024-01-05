@@ -163,7 +163,12 @@ class PullRequestWrapper:
             # print(f"raise PullRequestNotFoundException({id})")
             return None
         return document
-
+    
+    @staticmethod
+    def delete_many(query: Dict[str, Union[str, int]]):
+        """Delete multiple records based on query"""
+        PullRequestCollection.delete_many(query)
+        
 class CommitStatusCheckWrapper:
     
     @staticmethod

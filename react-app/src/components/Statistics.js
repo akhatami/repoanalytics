@@ -1,4 +1,6 @@
 import React from 'react';
+import TestingStatsAll from "./TestingStatsAll";
+import PullRequestStatsAll from "./PullRequestStatsAll";
 
 function Statistics(){
     return(
@@ -15,7 +17,12 @@ function Statistics(){
                 </div>
             </section>
             <section className="content">
-                Content
+                <div className="row">
+                    <TestingStatsAll />
+                </div>
+                <div className="row">
+                    <PullRequestStatsAll />
+                </div>
             </section>
         </div>
     );

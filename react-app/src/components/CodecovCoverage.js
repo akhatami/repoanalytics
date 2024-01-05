@@ -1,10 +1,8 @@
 import React, {useEffect, useState} from 'react';
 import InfoBox from "./InfoBox";
 import axios from "axios";
-import Typography from "@mui/material/Typography";
+
 function calcStats(data){
-    console.log(data[0]['avg']);
-    console.log(data[data.length - 1]['avg']);
     let coverageChange = data[0]['avg'] - data[data.length - 1]['avg'];
     coverageChange = coverageChange.toFixed(2);
     return {coverageChange};
@@ -52,7 +50,7 @@ function CodecovCoverage({ repo_handle }){
                 coverageData[0] !== 'NOT FOUND' ? (
                     <>
                         <InfoBox colSize="3" color="white" iconClass="fa-code" text="Code Coverage (Codecov)"
-                                 number={coverageData[coverageData.length - 1]['avg'].toFixed(2)} />
+                                 number={coverageData[0]['avg'].toFixed(2)} />
                         <div className={`col-lg-4 info-box-container`}>
                             <div className="info-box">
                                 <span className="info-box-icon bg-info"><i className="fas fa-code"></i></span>

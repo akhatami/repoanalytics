@@ -33,7 +33,7 @@ function TestingStats({ repo_handle }) {
     return(
         <>
             <div className="row-sm-12">
-                <h4 className="mb-3">Testing Stats</h4>
+                <h4 className="mb-3">Project Testing Stats</h4>
             </div>
             {repo && repo.has_coveralls === 1 ? (
                 <CoverallsCoverage repo_handle={repo_handle} />

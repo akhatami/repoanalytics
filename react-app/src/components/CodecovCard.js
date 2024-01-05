@@ -68,6 +68,8 @@ function CodecovCard({ repo_handle }){
                         datasetData.push(coverage.avg);
                     }
                     datasetData.reverse();
+                    labels.reverse();
+
                     // if (labels.length > 50){
                     //     labels = labels.slice(-50);
                     //     datasetData = datasetData.slice(-50);

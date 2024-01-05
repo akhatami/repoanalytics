@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import axios from "axios";
 import InfoBox from "./InfoBox";
+import Loading from "./Loading";
 
 function calcStats(data) {
     // Initialize variables for calculations
@@ -15,6 +16,8 @@ function calcStats(data) {
     let runTimeCount = 0;
     const appCount = {};
     const statusCount = {};
+    const failedChecks = {};
+    const unsuccessfulStatuses = {};
 
     // Iterate over the properties of the data object
     for (const record of data) {
@@ -23,10 +26,29 @@ function calcStats(data) {
         if (numContexts === null) {
             continue;
         }
+        totalContexts += numContexts;
 
         for (const context of record.contexts) {
-            // Check if context.startedAt and context.completedAt exist
-            if (context.startedAt && context.completedAt && context.conclusion === "SUCCESS") {
+
+            if (context.startedAt && context.completedAt && context.conclusion === "FAILURE" && context.status === "COMPLETED") {
+                // A completed check that is failed
+                const name = context.name || 'Unknown';
+
+                // Group failed checks into different categories based on their name
+                if (failedChecks[name]) {
+                    failedChecks[name].count++;
+                } else {
+                    failedChecks[name] = {
+                        count: 1,
+                        appName: context.checkSuite.app.name,
+                        appUrl: context.checkSuite.app.url,
+                    };
+                }
+
+            }
+
+            if (context.startedAt && context.completedAt && context.conclusion === "SUCCESS" && context.status === "COMPLETED") {
+                // A successful check (not status)
                 const startTime = new Date(context.startedAt);
                 const endTime = new Date(context.completedAt);
 
@@ -39,10 +61,13 @@ function calcStats(data) {
                 runTimeCount++;
 
             } else {
+                // Either an unsuccessful check or a status
                 if (context.state === "SUCCESS") {
+                    // A successful status
                     const statusName = context.context;
                     const statusDescription = context.description;
                     const statusUrl = context.targetUrl;
+                    // Count status
                     if (statusCount[statusName]) {
                         statusCount[statusName].count++;
                     } else {
@@ -52,6 +77,20 @@ function calcStats(data) {
                             description: statusDescription,
                             count: 1,
                         };
+                    }
+                }else{
+                    // A unsuccessful status
+                    if (context.state === "ERROR" || context.state === "FAILURE") {
+                        const name = context.context || 'Unknown';
+
+                        // Group unsuccessful checks into different categories based on their name
+                        if (unsuccessfulStatuses[name]) {
+                            unsuccessfulStatuses[name].count++;
+                        } else {
+                            unsuccessfulStatuses[name] = {
+                                count: 1,
+                            };
+                        }
                     }
                 }
                 continue;
@@ -87,8 +126,6 @@ function calcStats(data) {
         if (statusCheckRollupState === 'SUCCESS') {
             successfulRollupState++;
         }
-
-        totalContexts += numContexts;
         recordCount++;
     }
 
@@ -107,7 +144,9 @@ function calcStats(data) {
     // console.log('Status Count Dictionary:', statusCount);
     // console.log('Run time in seconds:', runTimeAverage.toFixed(2));
 
-    return {averageContexts, successRate, runTimeAverage, recordCount, maxContexts, minContexts};
+    const allFailedChecks = {...failedChecks, ...unsuccessfulStatuses}
+
+    return {averageContexts, successRate, runTimeAverage, recordCount, maxContexts, minContexts, allFailedChecks, totalContexts};
 }
 function StatusCheckRuns({ repo_handle }){
     const [statusChecks, setStatusChecks] = useState(null);
@@ -149,18 +188,19 @@ function StatusCheckRuns({ repo_handle }){
 
     return(
         <>
-            {stats && (
+            <div className="row-sm-12">
+                <h4 className="mb-3">Continuous Integration Stats </h4>
+            </div>
+            {stats ? (
                 <>
-                    <div className="row-sm-12">
-                        <h4 className="mb-3">Continuous Integration Stats <span className="small">commit Checks over the last 100 PRs</span></h4>
-                    </div>
+                    <p>Over the last 100 PRs containing {stats.recordCount} commits with {stats.totalContexts} checks in total.</p>
                     <InfoBox
                         colSize="4"
                         color="white"
                         iconClass="fa-chart-line"
-                        text="Average number of contexts per commit"
-                        content={`Minimum count: ${stats.minContexts ? stats.minContexts : 'N/A'} | 
-                        Maximum count: ${stats.maxContexts ? stats.maxContexts : 'N/A'}`}
+                        text="Average number of checks per commit"
+                        content={`Min: ${stats.minContexts ? stats.minContexts : 'N/A'} |  
+                        Max: ${stats.maxContexts ? stats.maxContexts : 'N/A'}`}
                         number={stats.averageContexts ? stats.averageContexts.toFixed(0) : 'N/A'}
                     />
                     <InfoBox
@@ -184,7 +224,47 @@ function StatusCheckRuns({ repo_handle }){
                             </div>
                         </div>
                     </div>
+                    <div className="col-md-6">
+                            <div className="card">
+                                <div className="card-header">
+                                    <h3 className="card-title">Top Failed Checks</h3>
+                                </div>
+                                <div className="card-body">
+                                    <div className="table-responsive">
+                                        <table className="table table-bordered table-striped">
+                                            <thead>
+                                            <tr>
+                                                <th>Check Name</th>
+                                                <th>Count</th>
+                                                <th>App Name</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            {Object.entries(stats.allFailedChecks)
+                                                .sort(([, a], [, b]) => b.count - a.count) // Sort by count in descending order
+                                                .slice(0, 5) // Take only the top 5 entries
+                                                .map(([checkName, checkInfo]) => (
+                                                    <tr key={checkName}>
+                                                        <td>{checkName}</td>
+                                                        <td>{checkInfo.count}</td>
+                                                        <td>
+                                                            {checkInfo.appUrl ? (
+                                                                <a href={checkInfo.appUrl} target="_blank" rel="noopener noreferrer">
+                                                                    {checkInfo.appName || 'N/A'}
+                                                                </a>
+                                                            ) : 'N/A'}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                    </div>
                 </>
+            ) : (
+                <Loading containerHeight='15vh'/> // Show loading component while stats is being loaded
             )}
         </>
     );

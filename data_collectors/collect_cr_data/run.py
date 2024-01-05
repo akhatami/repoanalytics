@@ -3,6 +3,7 @@ from data_collectors.wrappers import *
 import requests
 import logging
 import time
+from datetime import datetime, timedelta
 from ..config import settings
 
 # Save logs
@@ -216,23 +217,36 @@ def fetch_and_store_pull_requests(repo_name, owner, default_req_size1 = 100, req
     else:
         LOGGER.info(f"=== DONE FETCHING {repo_handle} RECORDS. ===")
 
-repositories = RepositoryWrapper.read()
+def remove_old_records(years = 4):
+    # Calculate the date four years ago from the current date
+    four_years_ago = datetime.utcnow() - timedelta(days=4*365)
 
-skip_list = []
+    # Convert the four_years_ago datetime object to a string in the same format as your 'createdAt' field
+    four_years_ago_str = four_years_ago.strftime('%Y-%m-%dT%H:%M:%SZ')
 
-# Loop through repositories and fetch pull requests
-for repo in repositories:
-    repo_handle = repo.name
-    
-    if repo_handle in skip_list:
-        LOGGER.info(f"=== SKIP {repo_handle} ===")
-        continue
-    repo_name = repo_handle.split('/')[1]
-    owner = repo_handle.split('/')[0]
+    # Delete records older than four years
+    PullRequestWrapper.delete_many({'createdAt': {'$lt': four_years_ago_str}})
 
-    if repo_handle == "":
-        fetch_and_store_pull_requests(repo_name=repo_name, owner=owner, default_req_size1=50, 
-                                      end_cursor= "", index=0, reduce_size=5)
-    else:
-        LOGGER.info(f"=== Start fetching pull requests for: {repo_handle} ===")
-        fetch_and_store_pull_requests(repo_name=repo_name, owner=owner, default_req_size1=50, reduce_size=5)
+def crawl_all_prs(): 
+    repositories = RepositoryWrapper.read()
+
+    skip_list = []
+
+    # Loop through repositories and fetch pull requests
+    for repo in repositories:
+        repo_handle = repo.name
+        
+        if repo_handle in skip_list:
+            LOGGER.info(f"=== SKIP {repo_handle} ===")
+            continue
+        repo_name = repo_handle.split('/')[1]
+        owner = repo_handle.split('/')[0]
+
+        if repo_handle == "":
+            fetch_and_store_pull_requests(repo_name=repo_name, owner=owner, default_req_size1=50, 
+                                          end_cursor= "", index=0, reduce_size=5)
+        else:
+            LOGGER.info(f"=== Start fetching pull requests for: {repo_handle} ===")
+            fetch_and_store_pull_requests(repo_name=repo_name, owner=owner, default_req_size1=50, reduce_size=5)
+
+remove_old_records(4)

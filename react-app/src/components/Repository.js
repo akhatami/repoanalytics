@@ -1,8 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {useParams} from 'react-router-dom';
 import axios from 'axios';
-import CodecovCard from "./CodecovCard";
-import CoverallsCard from "./CoverallsCard";
 import Breadcrumbs from "./Breadcrumbs";
 import StatusCheckRuns from "./StatusCheckRuns";
 import TestingStats from "./TestingStats";
@@ -10,6 +8,8 @@ import PullRequestStats from "./PullRequestStats";
 import GuidelinesStats from "./GuidelinesStats";
 import NotFound from "./NotFound";
 import Loading from "./Loading";
+import TestingStatsAll from "./TestingStatsAll";
+import PullRequestStatsAll from "./PullRequestStatsAll";
 
 function Repository() {
     const { user, repo_name } = useParams();
@@ -25,7 +25,6 @@ function Repository() {
                 return null;
             }
         }
-
 
         fetchRepoDetails()
             .then(response => {
@@ -71,10 +70,16 @@ function Repository() {
                                             <TestingStats repo_handle={user+'/'+repo_name}/>
                                         </div>
                                         <div className="row">
+                                            <TestingStatsAll />
+                                        </div>
+                                        <div className="row">
                                             <StatusCheckRuns repo_handle={user+'/'+repo_name} />
                                         </div>
                                         <div className="row">
                                             <PullRequestStats repo_handle={user+'/'+repo_name} />
+                                        </div>
+                                        <div className="row">
+                                            <PullRequestStatsAll />
                                         </div>
                                         <div className="row">
                                             <GuidelinesStats repo_handle={user+'/'+repo_name} />

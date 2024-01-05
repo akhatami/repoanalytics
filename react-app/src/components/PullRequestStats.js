@@ -7,16 +7,16 @@ import Loading from "./Loading";
 function calcStats(data){
     const totalPRs = data.length;
 
-    const averageAdditions = calculateAverages(data, 'additions');
-    const averageDeletions = calculateAverages(data, 'deletions');
-    const averageChangedFiles = calculateAverages(data, 'changedFiles');
+    const averageAdditions = calculateAverages(data, 'additions').toFixed(2);
+    const averageDeletions = calculateAverages(data, 'deletions').toFixed(2);
+    const averageChangedFiles = calculateAverages(data, 'changedFiles').toFixed(2);
 
     const totalParticipants = calculateTotalParticipants(data);
     const averageParticipants = totalParticipants / totalPRs;
 
     // Calculate the average number of comments per PR
     const totalComments = data.reduce((sum, pr) => sum + pr.comments.totalCount, 0);
-    const averageComments = totalComments / totalPRs;
+    const averageComments = (totalComments / totalPRs).toFixed(2);
 
     // Calculate the average time taken for a PR to be reviewed and closed
     const reviewTimes = data
@@ -80,7 +80,7 @@ function PullRequestStats({ repo_handle }){
             <h4 className="mb-3">Pull Requests Stats <span className="small">over the last 100 PRs</span></h4>
         </div>
             {loading ? (
-                <Loading />
+                <Loading containerHeight='15vh'/>
             ) : (
                 <>
                     <InfoBox colSize="3" color="white" iconClass="fa-plus" text="Average Additions per PR (line)"
