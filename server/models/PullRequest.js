@@ -24,7 +24,9 @@ const pullRequestSchema = new mongoose.Schema({
     reviews: JSON,
     reviewRequests: JSON,
     reviewThreads: JSON,
-    totalCommentsCount: Number
+    totalCommentsCount: Number,
+    title: String,
+    updatedAt: String,
 }, {collection: 'pull_request'});
 
 module.exports = mongoose.model('PullRequest', pullRequestSchema);

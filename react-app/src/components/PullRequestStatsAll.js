@@ -7,11 +7,9 @@ import Loading from "./Loading";
 function calcStats(data) {
     const repos = Object.values(data);
     const totalRepos = repos.length;
-
     const repoAverages = repos.map(repo => {
         repo = repo['pulls'];
         const totalPRs = repo.length;
-        console.log(repo);
         const averageAdditions = calculateAverages(repo, 'additions').toFixed(2);
         const averageDeletions = calculateAverages(repo, 'deletions').toFixed(2);
         const averageChangedFiles = calculateAverages(repo, 'changedFiles').toFixed(2);
@@ -29,7 +27,6 @@ function calcStats(data) {
             .map(pr => (new Date(pr.closedAt) - new Date(pr.createdAt)) / (1000 * 3600 * 24));
 
         const averageReviewTime = (reviewTimes.reduce((sum, time) => sum + time, 0) / reviewTimes.length).toFixed(2);
-
         return {
             averageAdditions,
             averageDeletions,
@@ -55,7 +52,7 @@ function calcStats(data) {
 
 
 function PullRequestStatsAll(){
-    const [jsonData, setJsonData] = useState([]);
+    const [jsonData, setJsonData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState(null);
 
@@ -82,9 +79,6 @@ function PullRequestStatsAll(){
                 console.error('Fetch data error:', error);
                 setJsonData([])
             })
-            .finally(() => {
-                setLoading(false);
-            });
     }, []);
 
     useEffect(() => {
@@ -92,11 +86,12 @@ function PullRequestStatsAll(){
             if (jsonData) {
                 const calculatedStats = calcStats(jsonData);
                 setStats(calculatedStats);
+                setLoading(false);
             }
         };
 
         updateStats();
-    }, [jsonData, calcStats]);
+    }, [jsonData]);
 
     const [isStatsOpen, setStatsOpen] = useState(false);
 
@@ -122,7 +117,7 @@ function PullRequestStatsAll(){
                         <Loading containerHeight='15vh'/>
                     ) : (
                         <>
-                            <p>Over {stats.totalRepos} repositories in our dataset.</p>
+                            <p>Over the last 100 PRs of {stats.totalRepos} repositories in our dataset.</p>
                             <InfoBox colSize="3" color="white" iconClass="fa-plus" text="Average Additions per PR (line)"
                                      number={stats.averageAdditions} />
                             <InfoBox colSize="3" color="white" iconClass="fa-minus" text="Average Deletions per PR (line)"

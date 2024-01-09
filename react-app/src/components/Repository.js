@@ -10,6 +10,8 @@ import NotFound from "./NotFound";
 import Loading from "./Loading";
 import TestingStatsAll from "./TestingStatsAll";
 import PullRequestStatsAll from "./PullRequestStatsAll";
+import StatusCheckRunsAll from "./StatusChecksRunsAll";
+import GuidelinesStatsAll from "./GuidelinesStatsAll";
 
 function Repository() {
     const { user, repo_name } = useParams();
@@ -76,6 +78,9 @@ function Repository() {
                                             <StatusCheckRuns repo_handle={user+'/'+repo_name} />
                                         </div>
                                         <div className="row">
+                                            <StatusCheckRunsAll />
+                                        </div>
+                                        <div className="row">
                                             <PullRequestStats repo_handle={user+'/'+repo_name} />
                                         </div>
                                         <div className="row">
@@ -83,6 +88,9 @@ function Repository() {
                                         </div>
                                         <div className="row">
                                             <GuidelinesStats repo_handle={user+'/'+repo_name} />
+                                        </div>
+                                        <div className="row">
+                                            <GuidelinesStatsAll />
                                         </div>
                                     </section>
                                 </div>

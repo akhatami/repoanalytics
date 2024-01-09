@@ -77,12 +77,13 @@ function PullRequestStats({ repo_handle }){
     return(
     <>
         <div className="row-sm-12">
-            <h4 className="mb-3">Pull Requests Stats <span className="small">over the last 100 PRs</span></h4>
+            <h4 className="mb-3">Pull Requests Stats</h4>
         </div>
             {loading ? (
                 <Loading containerHeight='15vh'/>
             ) : (
                 <>
+                    <p>Over the last 100 PRs</p>
                     <InfoBox colSize="3" color="white" iconClass="fa-plus" text="Average Additions per PR (line)"
                              number={stats.averageAdditions} />
                     <InfoBox colSize="3" color="white" iconClass="fa-minus" text="Average Deletions per PR (line)"

@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { Card, CardContent, Typography } from '@mui/material';
 import PullRequestTable from './PullRequestTable';
 import PullRequestCommitPopup from "./PullRequestCommitPopup";
 import axios from "axios";
@@ -10,6 +9,7 @@ const PullRequestCard = ({ repo_handle }) => {
     const [isCommitDetailsOpen, setCommitDetailsOpen] = useState(false);
     const [selectedPullId, setSelectedPullId] = useState(null);
     const handleCommitDetailsClick = (pullId) => {
+        console.log('called');
         setSelectedPullId(pullId);
         setCommitDetailsOpen(true);
     };
@@ -58,10 +58,20 @@ const PullRequestCard = ({ repo_handle }) => {
                     {loading ? (
                         <p>Loading...</p>
                     ) : (
+                        <>
                         <PullRequestTable
                             data={jsonData}
                             handleCommitDetailsClick={handleCommitDetailsClick}
                         />
+                        {isCommitDetailsOpen && (
+                            <PullRequestCommitPopup
+                                isOpen={isCommitDetailsOpen}
+                                onClose={handleCloseCommitDetails}
+                                pullId={selectedPullId}
+                                repo_handle={repo_handle}
+                            />
+                        )}
+                        </>
                     )}
                 </div>
             </div>

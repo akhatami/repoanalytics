@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const NodeCache = require('node-cache');
+const cache = new NodeCache();
 
 const Repository = require('../models/Repository');
 const Codecov = require('../models/Codecov');
@@ -80,6 +82,21 @@ router.get('/repo_details/:user/:repo_name', async (req, res) => {
         res.json(['NOT FOUND']);
     } else {
         res.json(data[0]);
+    }
+});
+
+router.get('/repo_details/all', async (req, res) => {
+    let data;
+    try {
+        data = await RepositoryDetails.find({});
+    } catch (error) {
+        console.error('Error fetching repo details:', error);
+        data = [{}];
+    }
+    if (Object.keys(data).length === 0){
+        res.json(['NOT FOUND']);
+    } else {
+        res.json(data);
     }
 });
 
@@ -191,42 +208,58 @@ router.get('/pulls/:user/:repo_name', async (req, res) => {
 // index is manually added on 'createdAt' field and also 'repository' field
 router.get('/pulls/all', async (req, res) => {
     try {
-        const targetPullsPerRepository = 100;
+        // Check if the data is already in the cache
+        const cachedData = cache.get('allPulls');
+        if (cachedData) {
+            // If data is found in the cache, return it
+            console.log('use cached data!');
+            res.json(cachedData);
+        } else {
+            const targetPullsPerRepository = 100;
 
-        const allData = await PullRequest.find().sort({ 'createdAt': -1 });
+            const allData = await PullRequest.find().select({
+                repository: 1,
+                createdAt: 1,
+                additions: 1,
+                deletions: 1,
+                changedFiles: 1,
+                participants: 1,
+                comments: 1,
+                merged: 1,
+                closedAt: 1
+            }).sort({'createdAt': -1});
 
-        // Group data by repository
-        const groupedData = allData.reduce((acc, entry) => {
-            const repositoryId = entry.repository;
-            if (!acc[repositoryId]) {
-                acc[repositoryId] = { _id: repositoryId, pulls: [] };
-            }
-            acc[repositoryId].pulls.push(entry);
-            return acc;
-        }, {});
+            // Group data by repository
+            const groupedData = allData.reduce((acc, entry) => {
+                const repositoryId = entry.repository;
+                if (!acc[repositoryId]) {
+                    acc[repositoryId] = {_id: repositoryId, pulls: []};
+                }
+                acc[repositoryId].pulls.push(entry);
+                return acc;
+            }, {});
 
-        console.log('groupedData', groupedData);
+            // Filter the latest 100 pull requests for each repository
+            const filteredData = Object.values(groupedData).map(repository => ({
+                _id: repository._id,
+                pulls: repository.pulls.slice(0, targetPullsPerRepository)
+            }));
 
-        // Filter the latest 100 pull requests for each repository
-        const filteredData = Object.values(groupedData).map(repository => ({
-            _id: repository._id,
-            pulls: repository.pulls.slice(0, targetPullsPerRepository)
-        }));
+            // Log count of repositories in the first level
+            // console.log('Repository count:', Object.keys(groupedData).length);
 
-        // Log count of repositories in the first level
-        console.log('Repository count:', Object.keys(groupedData).length);
+            // Log count of pull requests per repository in the second level
+            // console.log('Pull requests per repository count:', filteredData.map(repo => repo.pulls.length));
+            // Cache the data for future requests (time-to-live set to 1 hour in seconds)
+            cache.set('allPulls', filteredData, 3600);
 
-        // Log count of pull requests per repository in the second level
-        console.log('Pull requests per repository count:', filteredData.map(repo => repo.pulls.length));
-
-        res.json(filteredData);
+            res.json(filteredData);
+        }
     } catch (error) {
         console.error('Error fetching all pull requests:', error);
         res.json(['NOT FOUND']);
     }
 });
-
-
 
 
 router.get('/statusChecks/:user/:repo_name/:pull_number', async (req, res) => {
@@ -254,17 +287,16 @@ router.get('/statusChecksMultiple/:user/:repo_name/:limit', async (req, res) => 
     const user = req.params.user;
     const repo_name = req.params.repo_name;
     const limit = req.params.limit;
-
     const name = user + '/' + repo_name;
-    console.log(limit, user, repo_name);
+
     let data;
     try {
         // Step 1: Retrieve the latest 100 PR numbers
         const latestPRs = await CommitStatusCheck.aggregate([
             { $match: { repository: name } },
-            { $group: { _id: '$pull_request_number' } },
-            { $sort: { _id: -1 } },
-            { $limit: parseInt(limit) },
+            { $group: { _id: '$pull_request_number', count: { $sum: 1 } } }, // Group by pull_request_number and count occurrences
+            { $sort: { _id: -1 } }, // Sort in descending order based on pull_request_number
+            { $limit: parseInt(limit) }, // Take the last 100 documents
         ]);
 
         // Extract PR numbers from the aggregation result
@@ -279,6 +311,48 @@ router.get('/statusChecksMultiple/:user/:repo_name/:limit', async (req, res) => 
         console.error('Error fetching status check details:', error);
         data = [{}];
     }
+    if (Object.keys(data).length === 0){
+        res.json(['NOT FOUND']);
+    } else {
+        res.json(data);
+    }
+});
+
+router.get('/statusChecks/all/:dateString', async (req, res) => {
+    const dateString = req.params.dateString;
+    console.log(dateString);
+    let data;
+    try {
+        const cachedData = cache.get('allStatusChecks');
+        if (cachedData) {
+            console.log('use cached data! (statusCheck)');
+            data = cachedData;
+        }else{
+            // Step 1: Retrieve the latest PRs numbers
+            const latestPRs = await PullRequest.find({
+                createdAt: {$gt: dateString}
+            }).select({
+                id: 1
+            });
+
+            // Extract PR Ids from the aggregation result
+            const prIds = latestPRs.map(pr => pr.id);
+            const uniquePRIds = [...new Set(prIds)];
+
+            // Step 2: Retrieve status checks for the latest Rs
+            data = await CommitStatusCheck.find({
+                'pull_request_id': {$in: uniquePRIds}
+            });
+
+            // Cache the data for future requests (time-to-live set to 1 hour in seconds)
+            cache.set('allStatusChecks', data, 3600);
+        }
+
+    } catch (error) {
+        console.error('Error fetching status check details:', error);
+        data = [{}];
+    }
+
     if (Object.keys(data).length === 0){
         res.json(['NOT FOUND']);
     } else {

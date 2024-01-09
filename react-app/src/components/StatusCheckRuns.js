@@ -14,7 +14,7 @@ function calcStats(data) {
     let successfulRollupState = 0;
     let runTimeTotal = 0;
     let runTimeCount = 0;
-    const appCount = {};
+    const topUsedApps = {};
     const statusCount = {};
     const failedChecks = {};
     const unsuccessfulStatuses = {};
@@ -29,6 +29,25 @@ function calcStats(data) {
         totalContexts += numContexts;
 
         for (const context of record.contexts) {
+
+            if (context.startedAt && context.completedAt){
+                // Find the name and slug of the app from context.checkSuite.app
+                const appName = context.checkSuite.app.name;
+                const appSlug = context.checkSuite.app.slug;
+                const appUrl = context.checkSuite.app.url;
+
+                // Add the app to the dictionary and increment the count
+                if (topUsedApps[appSlug]) {
+                    topUsedApps[appSlug].count++;
+                } else {
+                    topUsedApps[appSlug] = {
+                        name: appName,
+                        url: appUrl,
+                        count: 1,
+                    };
+                }
+            }
+
 
             if (context.startedAt && context.completedAt && context.conclusion === "FAILURE" && context.status === "COMPLETED") {
                 // A completed check that is failed
@@ -93,24 +112,8 @@ function calcStats(data) {
                         }
                     }
                 }
-                continue;
             }
 
-            // Find the name and slug of the app from context.checkSuite.app
-            const appName = context.checkSuite.app.name;
-            const appSlug = context.checkSuite.app.slug;
-            const appUrl = context.checkSuite.app.url;
-
-            // Add the app to the dictionary and increment the count
-            if (appCount[appSlug]) {
-                appCount[appSlug].count++;
-            } else {
-                appCount[appSlug] = {
-                    name: appName,
-                    url: appUrl,
-                    count: 1,
-                };
-            }
         }
 
         if (numContexts > maxContexts) {
@@ -126,6 +129,7 @@ function calcStats(data) {
         if (statusCheckRollupState === 'SUCCESS') {
             successfulRollupState++;
         }
+        // records (commits) that have contexts
         recordCount++;
     }
 
@@ -134,19 +138,9 @@ function calcStats(data) {
     const successRate = (successfulRollupState / recordCount) * 100;
     const runTimeAverage = runTimeTotal / runTimeCount;
 
-    // console.log('Maximum number of contexts for a PR commit record:', maxContexts, maxContextsPRNumber);
-    // console.log('Minimum number of contexts for a PR commit record:', minContexts, minContextsPRNumber);
-    // console.log('Average number of contexts for a PR commit record:', averageContexts.toFixed(2));
-    // console.log('Total records with contexts (commits):', recordCount);
-    // console.log('Successful context records:', successfulRollupState);
-    // console.log('Success Rate:', successRate.toFixed(2) + '%');
-    // console.log('App Count Dictionary:', appCount);
-    // console.log('Status Count Dictionary:', statusCount);
-    // console.log('Run time in seconds:', runTimeAverage.toFixed(2));
-
     const allFailedChecks = {...failedChecks, ...unsuccessfulStatuses}
-
-    return {averageContexts, successRate, runTimeAverage, recordCount, maxContexts, minContexts, allFailedChecks, totalContexts};
+    const commitCount = data.length;
+    return {averageContexts, successRate, runTimeAverage, recordCount, maxContexts, minContexts, allFailedChecks, totalContexts, commitCount, topUsedApps};
 }
 function StatusCheckRuns({ repo_handle }){
     const [statusChecks, setStatusChecks] = useState(null);
@@ -189,11 +183,11 @@ function StatusCheckRuns({ repo_handle }){
     return(
         <>
             <div className="row-sm-12">
-                <h4 className="mb-3">Continuous Integration Stats </h4>
+                <h4 className="mb-3">Automated Workflows Stats</h4>
             </div>
             {stats ? (
                 <>
-                    <p>Over the last 100 PRs containing {stats.recordCount} commits with {stats.totalContexts} checks in total.</p>
+                    <p>Over the last 100 PRs containing {stats.commitCount} commits, with {stats.recordCount} of them having {stats.totalContexts} checks in total.</p>
                     <InfoBox
                         colSize="4"
                         color="white"
@@ -215,12 +209,12 @@ function StatusCheckRuns({ repo_handle }){
                         <div className="info-box">
                             <span className="info-box-icon bg-info"><i className="fas fa-list-alt"></i></span>
                             <div className="info-box-content">
-                                <span className="info-box-text">Checks success rate</span>
+                                <span className="info-box-text">Success rate</span>
                                 <span className="info-box-number">Total commits: {stats.recordCount ? stats.recordCount : 'N/A'}</span>
                                 <div className="progress">
                                     <div className="progress-bar bg-info" style={{ width: `${stats.successRate}%` }}></div>
                                 </div>
-                                <span className="progress-description">{stats.successRate.toFixed(0)}% ran successful</span>
+                                <span className="progress-description">{stats.successRate.toFixed(0)}% were successful</span>
                             </div>
                         </div>
                     </div>
@@ -235,7 +229,7 @@ function StatusCheckRuns({ repo_handle }){
                                             <thead>
                                             <tr>
                                                 <th>Check Name</th>
-                                                <th>Count</th>
+                                                <th># of Failures</th>
                                                 <th>App Name</th>
                                             </tr>
                                             </thead>
@@ -262,6 +256,43 @@ function StatusCheckRuns({ repo_handle }){
                                 </div>
                             </div>
                     </div>
+                    <div className="col-md-6">
+                        <div className="card">
+                            <div className="card-header">
+                                <h3 className="card-title">Top Used Apps</h3>
+                            </div>
+                            <div className="card-body">
+                                <div className="table-responsive">
+                                    <table className="table table-bordered table-striped">
+                                        <thead>
+                                        <tr>
+                                            <th>App Name</th>
+                                            <th># of Check Runs</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {Object.entries(stats.topUsedApps)
+                                            .sort(([, a], [, b]) => b.count - a.count) // Sort by count in descending order
+                                            .slice(0, 5) // Take only the top 5 entries
+                                            .map(([appName, appInfo]) => (
+                                                <tr key={appName}>
+                                                    <td>
+                                                        {appInfo.url ? (
+                                                            <a href={appInfo.url} target="_blank" rel="noopener noreferrer">
+                                                                {appInfo.name}
+                                                            </a>
+                                                        ) : appInfo.name}
+                                                    </td>
+                                                    <td>{appInfo.count}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </>
             ) : (
                 <Loading containerHeight='15vh'/> // Show loading component while stats is being loaded

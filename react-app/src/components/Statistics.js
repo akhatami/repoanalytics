@@ -1,6 +1,8 @@
 import React from 'react';
 import TestingStatsAll from "./TestingStatsAll";
 import PullRequestStatsAll from "./PullRequestStatsAll";
+import StatusCheckRunsAll from "./StatusChecksRunsAll";
+import GuidelinesStatsAll from "./GuidelinesStatsAll";
 
 function Statistics(){
     return(
@@ -21,7 +23,13 @@ function Statistics(){
                     <TestingStatsAll />
                 </div>
                 <div className="row">
+                    <StatusCheckRunsAll />
+                </div>
+                <div className="row">
                     <PullRequestStatsAll />
+                </div>
+                <div className="row">
+                    <GuidelinesStatsAll />
                 </div>
             </section>
         </div>
