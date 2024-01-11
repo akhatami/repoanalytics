@@ -5,13 +5,19 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "prestart": "kill-port --port 3000",
     "client": "cd react-app && npm start",
+    "prestart:server": "kill-port --port 8080",
     "server": "cd server && nodemon server.js",
+    "prestart": "kill-port --port 8080",
     "start": "concurrently -n 'server,client' -c 'green,blue' \"npm run server\" \"npm run client\""
   },
   "author": "Ali Khatami",
   "license": "MIT License",
   "dependencies": {
     "concurrently": "^8.2.1"
+  },
+  "devDependencies": {
+    "kill-port": "^2.0.1"
   }
 }
